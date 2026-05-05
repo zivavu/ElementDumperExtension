@@ -3,8 +3,10 @@
 	"private": true,
 	"description": "Element Dumper - a browser extension for dumping HTML elements with styles",
 	"scripts": {
-		"dev": "web-ext run --source-dir extension --firefox \"C:/Program Files/Zen Browser/zen.exe\" --firefox-profile \"C:/Users/zivavu/AppData/Roaming/zen/Profiles/2x9skb4p.Default (release)\"",
-		"run": "web-ext run --source-dir extension --firefox \"C:/Program Files/Zen Browser/zen.exe\" --firefox-profile \"C:/Users/zivavu/AppData/Roaming/zen/Profiles/2x9skb4p.Default (release)\""
+		"build": "node build.js",
+		"dev": "node dev.js",
+		"run": "node dev.js",
+		"release": "node release.js"
 	},
 	"devDependencies": {
 		"web-ext": "^10.1.0"
