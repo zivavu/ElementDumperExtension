@@ -1,0 +1,5 @@
+{
+	"name": "element-dumper-extension",
+	"private": true,
+	"description": "Element Dumper - a browser extension for dumping HTML elements with styles"
+}

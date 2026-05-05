@@ -1,0 +1,6 @@
+# Windows zone identifier metadata
+*.Zone.Identifier
+
+# OS metadata
+.DS_Store
+Thumbs.db
