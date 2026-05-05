@@ -86,27 +86,27 @@ Detection runs once (lazy-cached) and checks:
 
 ```
 element-dumper-extension/
-├── src/                            # Source files — edit these
-│   ├── core.js                     #   API shim, constants, state, helpers, CSS parser
-│   ├── tailwind.js                 #   Tailwind data, mapper, site detection
-│   ├── serialisers.js              #   inlineStyles + dumpTailwind
-│   ├── ui.js                       #   UI creation, updates, toast notifications
-│   ├── events.js                   #   Mouse / keyboard event handlers
-│   └── main.js                     #   doDump, lifecycle, message listener
-├── extension/                      # Static extension assets
+├── src/                            # All source files
+│   ├── content/                    #   Content script components
+│   │   ├── core.js                 #     API shim, constants, state, helpers, CSS parser
+│   │   ├── tailwind.js             #     Tailwind data, mapper, site detection
+│   │   ├── serialisers.js          #     inlineStyles + dumpTailwind
+│   │   ├── ui.js                   #     UI creation, updates, toast notifications
+│   │   ├── events.js               #     Mouse / keyboard event handlers
+│   │   └── main.js                 #     doDump, lifecycle, message listener
+│   ├── background.js               #   Background / service worker script
 │   ├── manifest-v2.json            #   Firefox manifest (MV2)
 │   ├── manifest-v3.json            #   Chrome manifest (MV3)
-│   ├── background.js               #   Background / service worker script
 │   └── icons/
 │       └── icon.png                #   Toolbar icon
-├── build.js                        # Build script — concats src/ → dist/ with correct manifest
+├── build.js                        # Build script — concats src/content/ → dist/
 ├── release.js                      # Release script — creates versioned zip files
 ├── dev.js                          # Dev server wrapper — builds then runs web-ext
 ├── package.json
 └── README.md
 ```
 
-The content script is split into logical components under `src/`. The build script concatenates them in order and wraps them in an IIFE, outputting directly to `dist/firefox/content.js` and `dist/chrome/content.js`. There is no bundler — just file concatenation.
+The content script is split into logical components under `src/content/`. The build script concatenates them in order and wraps them in an IIFE, outputting directly to `dist/firefox/content.js` and `dist/chrome/content.js`. There is no bundler — just file concatenation.
 
 ## Development server
 
@@ -145,8 +145,8 @@ This builds both targets and creates:
 
 ```
 releases/
-├── element-dumper-0.0.1-firefox.zip
-└── element-dumper-0.0.1-chrome.zip
+├── element-dumper-0.0.2-firefox.zip
+└── element-dumper-0.0.2-chrome.zip
 ```
 
 The version is read automatically from `manifest.json`. These zips are ready to upload to:

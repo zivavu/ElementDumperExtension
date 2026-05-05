@@ -2,10 +2,9 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const SRC = path.join(__dirname, "src");
-const EXTENSION = path.join(__dirname, "extension");
 const OUT = path.join(__dirname, "dist");
 
-const CONCAT_ORDER = [
+const CONTENT_ORDER = [
 	"core.js",
 	"tailwind.js",
 	"serialisers.js",
@@ -14,35 +13,17 @@ const CONCAT_ORDER = [
 	"main.js",
 ];
 
-// Concatenate src/ files into a single content.js wrapped in an IIFE
 function buildContentJs() {
 	const parts = [];
-	for (const file of CONCAT_ORDER) {
-		const filePath = path.join(SRC, file);
+	for (const file of CONTENT_ORDER) {
+		const filePath = path.join(SRC, "content", file);
 		if (!fs.existsSync(filePath)) {
 			console.error(`Missing source file: ${filePath}`);
 			process.exit(1);
 		}
 		parts.push(fs.readFileSync(filePath, "utf8"));
 	}
-
 	return `(() => {\n${parts.join("\n\n")}\n})();\n`;
-}
-
-// Copy extension/ to dist/, minus content.js (it's built from src/)
-function copyExtension(dest) {
-	fs.mkdirSync(dest, { recursive: true });
-	for (const entry of fs.readdirSync(EXTENSION, { withFileTypes: true })) {
-		const name = entry.name;
-		if (name === "content.js") continue; // skip generated file
-		const srcPath = path.join(EXTENSION, name);
-		const destPath = path.join(dest, name);
-		if (entry.isDirectory()) {
-			copyDir(srcPath, destPath);
-		} else {
-			fs.copyFileSync(srcPath, destPath);
-		}
-	}
 }
 
 function copyDir(src, dest) {
@@ -63,21 +44,21 @@ function buildTarget(target, manifestFile) {
 	if (fs.existsSync(dest)) {
 		fs.rmSync(dest, { recursive: true });
 	}
+	fs.mkdirSync(dest, { recursive: true });
 
-	// Copy extension/ (minus content.js)
-	copyExtension(dest);
-
-	// Write generated content.js from src/
-	const contentJs = buildContentJs();
-	fs.writeFileSync(path.join(dest, "content.js"), contentJs);
-
-	// Remove both manifest variants
-	fs.unlinkSync(path.join(dest, "manifest-v2.json"));
-	fs.unlinkSync(path.join(dest, "manifest-v3.json"));
-
-	// Copy the correct manifest as manifest.json
+	// Copy static assets (background.js, icons)
 	fs.copyFileSync(
-		path.join(EXTENSION, manifestFile),
+		path.join(SRC, "background.js"),
+		path.join(dest, "background.js"),
+	);
+	copyDir(path.join(SRC, "icons"), path.join(dest, "icons"));
+
+	// Write generated content.js
+	fs.writeFileSync(path.join(dest, "content.js"), buildContentJs());
+
+	// Copy correct manifest
+	fs.copyFileSync(
+		path.join(SRC, manifestFile),
 		path.join(dest, "manifest.json"),
 	);
 

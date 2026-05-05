@@ -7,10 +7,7 @@ const RELEASES = path.join(__dirname, "releases");
 
 // Read version from manifest (either one works, they share the same version)
 const manifest = JSON.parse(
-	fs.readFileSync(
-		path.join(__dirname, "extension", "manifest-v2.json"),
-		"utf8",
-	),
+	fs.readFileSync(path.join(__dirname, "src", "manifest-v2.json"), "utf8"),
 );
 const version = manifest.version;
 
