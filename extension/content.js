@@ -215,9 +215,8 @@
 		return `${html}</${tag}>\n`;
 	};
 
-	// ── CSS → Tailwind class mapper ──────────────────────────────────────────
+	// ── CSS to Tailwind class mapper ─────────────────────────────────────────
 
-	// Tailwind spacing scale (px → Tailwind level)
 	const TW_SPACING = [
 		{ level: 0, px: 0 },
 		{ level: "px", px: 1 },
@@ -284,7 +283,6 @@
 		{ cls: "font-black", val: 900 },
 	];
 
-	// Properties we attempt to map to Tailwind classes
 	const TAILWIND_MAPPED = new Set([
 		"display",
 		"position",
@@ -355,7 +353,6 @@
 		return best.cls;
 	}
 
-	// Basic color → Tailwind color/shade heuristic
 	function colorToTw(cssColor) {
 		const canvas = document.createElement("canvas");
 		const ctx = canvas.getContext("2d");
@@ -376,7 +373,6 @@
 					? ((max - min) / (510 - max - min)) * 100
 					: ((max - min) / (max + min)) * 100;
 
-		// Grayscale
 		if (max - min < 15 && s < 15) {
 			const shade =
 				l > 80
@@ -391,7 +387,6 @@
 			return `gray-${shade}`;
 		}
 
-		// Hue
 		let h = 0;
 		if (s > 0) {
 			if (max === r) h = ((g - b) / (max - min)) % 6;
@@ -455,7 +450,6 @@
 
 		for (const [prop, val] of Object.entries(styles)) {
 			switch (prop) {
-				// ── Display ──
 				case "display": {
 					const map = {
 						none: "hidden",
@@ -473,12 +467,10 @@
 					break;
 				}
 
-				// ── Position ──
 				case "position":
 					classes.push(val);
 					break;
 
-				// ── Flex layout ──
 				case "flex-direction": {
 					const map = {
 						row: "flex-row",
@@ -493,7 +485,6 @@
 					classes.push(`flex-${val}`);
 					break;
 
-				// ── Alignment ──
 				case "align-items":
 					classes.push(`items-${val}`);
 					break;
@@ -510,14 +501,12 @@
 					break;
 				}
 
-				// ── Gap ──
 				case "gap": {
 					const px = pxValue(val);
 					if (px !== null) classes.push(`gap-${closestTwSpacing(px)}`);
 					break;
 				}
 
-				// ── Spacing (padding / margin) ──
 				case "padding-top": {
 					const px = pxValue(val);
 					if (px !== null) classes.push(`pt-${closestTwSpacing(px)}`);
@@ -559,7 +548,6 @@
 					break;
 				}
 
-				// ── Sizing ──
 				case "width": {
 					if (val === "100%") classes.push("w-full");
 					else if (val === "100vw") classes.push("w-screen");
@@ -619,7 +607,6 @@
 					break;
 				}
 
-				// ── Typography ──
 				case "text-align":
 					classes.push(`text-${val}`);
 					break;
@@ -661,7 +648,6 @@
 					break;
 				}
 
-				// ── Visual ──
 				case "border-radius": {
 					if (val === "9999px" || val === "50%") classes.push("rounded-full");
 					else {
@@ -768,7 +754,6 @@
 					classes.push(`object-${val}`);
 					break;
 
-				// ── Colors (best-effort) ──
 				case "color": {
 					const twColor = colorToTw(val);
 					if (twColor) classes.push(`text-${twColor}`);
@@ -779,12 +764,9 @@
 					if (twColor) classes.push(`bg-${twColor}`);
 					break;
 				}
-				case "outline": {
-					// keep as inline style fallback
+				case "outline":
 					break;
-				}
 				default:
-					// not mapped → stays in inline style fallback
 					break;
 			}
 		}
@@ -792,32 +774,89 @@
 		return classes;
 	}
 
-	// Build style string for properties not mapped to Tailwind classes
 	function cssToStyleString(styles) {
 		const parts = [];
 		for (const [prop, val] of Object.entries(styles)) {
 			if (!TAILWIND_MAPPED.has(prop)) {
-				// Unmapped property → keep as inline style
 				parts.push(`${prop}: ${val}`);
 			}
 		}
 		return parts.join("; ");
 	}
 
+	// ── Tailwind site detection ─────────────────────────────────────────────
+
+	let _pageUsesTailwind = null;
+
+	function detectPageUsesTailwind() {
+		if (_pageUsesTailwind !== null) return _pageUsesTailwind;
+
+		// 1. Check for Tailwind CDN script
+		if (document.querySelector('script[src*="tailwind"]')) {
+			_pageUsesTailwind = true;
+			return true;
+		}
+
+		// 2. Check stylesheets for Tailwind markers
+		const sheets = document.styleSheets;
+		for (let i = 0; i < sheets.length; i++) {
+			try {
+				const rules = sheets[i].cssRules || sheets[i].rules;
+				if (!rules) continue;
+				for (let j = 0; j < rules.length; j++) {
+					try {
+						const text = rules[j].cssText || "";
+						if (text.includes("tailwind") || text.includes("! tailwindcss")) {
+							_pageUsesTailwind = true;
+							return true;
+						}
+					} catch {}
+				}
+			} catch {}
+		}
+
+		// 3. Sample elements for common Tailwind utility class patterns
+		const twPattern =
+			/^(flex|grid|container|mx-auto|px-\d|py-\d|p-\d|m-\d|mt-\d|mb-\d|ml-\d|mr-\d|gap-\d|w-\d|h-\d|text-\w+|font-\w+|bg-\w+|rounded|shadow|opacity-\d|z-\d|items-\w+|justify-\w+|object-\w+|overflow-\w+|cursor-\w+|whitespace-\w+|visible|invisible|relative|absolute|fixed|sticky|block|inline|hidden|table|table-cell|contents)$/;
+
+		const all = document.querySelectorAll("*");
+		const sample = Math.min(all.length, 100);
+		let matchCount = 0;
+		for (let i = 0; i < sample; i++) {
+			const el = all[i];
+			const clsList = el.classList;
+			for (let k = 0; k < clsList.length; k++) {
+				if (twPattern.test(clsList[k])) {
+					matchCount++;
+					break;
+				}
+			}
+		}
+
+		_pageUsesTailwind = matchCount > sample * 0.1;
+		return _pageUsesTailwind;
+	}
+
+	// ── Tailwind mode serialiser ────────────────────────────────────────────
+
 	const dumpTailwind = (el, depth = 0) => {
 		if (!isMeaningful(el)) return "";
 		const tag = el.tagName.toLowerCase();
-		const styles = getComputedCSS(el);
 		const indent = buildIndent(depth);
 
-		// Map computed CSS to Tailwind classes
-		const twClasses = cssToTailwind(styles);
-		// Remaining unmapped properties → inline style fallback
-		const styleStr = cssToStyleString(styles);
-
 		let html = `${indent}<${tag}${buildAttrs(el)}`;
-		if (twClasses.length > 0) html += ` class="${twClasses.join(" ")}"`;
-		if (styleStr) html += ` style="${styleStr}"`;
+
+		if (detectPageUsesTailwind()) {
+			const origClass = el.getAttribute("class");
+			if (origClass) html += ` class="${origClass.replace(/"/g, "&quot;")}"`;
+		} else {
+			const styles = getComputedCSS(el);
+			const twClasses = cssToTailwind(styles);
+			const styleStr = cssToStyleString(styles);
+			if (twClasses.length > 0) html += ` class="${twClasses.join(" ")}"`;
+			if (styleStr) html += ` style="${styleStr}"`;
+		}
+
 		html += ">";
 
 		if (VOID_TAGS.has(tag)) return `${html}\n`;
@@ -988,7 +1027,6 @@
 			`position:fixed;pointer-events:none;z-index:2147483646;display:block;top:${rect.top}px;left:${rect.left}px;width:${rect.width}px;height:${rect.height}px;border:2px solid #0095f6;background:rgba(0,149,246,0.08)`,
 		);
 
-		// Breadcrumb — walk up to document root
 		const pathNodes = [];
 		let cur = el;
 		while (cur && cur !== document) {
@@ -1003,7 +1041,7 @@
 					node === el ? "color:#0095f6;font-weight:600" : "color:#a8a8a8";
 				const sep =
 					i < pathNodes.length - 1
-						? ' <span style="color:#444;font-size:11px">›</span> '
+						? ' <span style="color:#444;font-size:11px">\u203A</span> '
 						: "";
 				return `<span style="${style}">&lt;${label}&gt;</span>${sep}`;
 			})
@@ -1012,20 +1050,20 @@
 		panelTag.style.color = "#0095f6";
 		panelTag.innerHTML = `&lt;${escHtml(getTagLabel(el))}&gt;`;
 
-		const dims = `${rect.width | 0}×${rect.height | 0}`;
+		const dims = `${rect.width | 0}\u00D7${rect.height | 0}`;
 		const text = (el.textContent ?? "").trim().slice(0, 120);
 		const childCount = el.children.length;
 
 		const det = [`<span style="color:#e8e8e8">${dims}</span>`];
 		if (childCount > 0)
 			det.push(
-				` &nbsp;· &nbsp;${childCount} child${childCount !== 1 ? "ren" : ""}`,
+				` &nbsp;\u00B7 &nbsp;${childCount} child${childCount !== 1 ? "ren" : ""}`,
 			);
-		if (text) det.push(` &nbsp;· &nbsp;"${escHtml(text)}"`);
+		if (text) det.push(` &nbsp;\u00B7 &nbsp;"${escHtml(text)}"`);
 		panelDetails.innerHTML = det.join("");
 
 		if (depthOffset > 0) {
-			panelDepth.textContent = `↑ ${depthOffset} level${depthOffset !== 1 ? "s" : ""} above hovered element`;
+			panelDepth.textContent = `\u2191 ${depthOffset} level${depthOffset !== 1 ? "s" : ""} above hovered element`;
 			panelDepth.style.display = "block";
 		} else {
 			panelDepth.style.display = "none";
