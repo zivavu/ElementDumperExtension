@@ -12,8 +12,12 @@ node_modules
 dist
 releases
 
+# Generated files
+extension/content.js
+
 # misc
 web-ext build output
 web-ext-artifacts
 web-ext.config.cjs
 nul
+test.html
