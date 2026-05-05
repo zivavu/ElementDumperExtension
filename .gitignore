@@ -4,3 +4,12 @@
 # OS metadata
 .DS_Store
 Thumbs.db
+
+# Node
+node_modules
+
+# misc
+web-ext build output
+web-ext-artifacts
+web-ext.config.js
+nul

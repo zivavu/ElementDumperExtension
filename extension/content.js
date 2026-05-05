@@ -506,21 +506,15 @@
 
 		const mode = tailwindMode ? "Tailwind" : "CSS";
 		const dump = tailwindMode ? dumpTailwind(el) : inlineStyles(el);
-		const tag = `${el.tagName.toLowerCase()}${el.id ? `#${el.id}` : ""}`;
-
-		console.log(`✅ Dumping <${tag}> [${mode} mode]`);
-		console.log(dump);
 
 		navigator.clipboard
 			.writeText(dump)
 			.then(() => {
-				const msg = `✅ Copied ${dump.length.toLocaleString()} characters to clipboard! [${mode}]`;
-				console.log(msg);
+				const msg = `Copied ${dump.length.toLocaleString()} characters to clipboard! [${mode}]`;
 				showToast(msg, false);
 			})
 			.catch((err) => {
-				const msg = `❌ Failed to copy: ${err.message}`;
-				console.error(msg);
+				const msg = `Failed to copy: ${err.message}`;
 				showToast(msg, true);
 			});
 	};
@@ -535,9 +529,6 @@
 		createUI();
 		document.addEventListener("mouseover", onMouseOver, true);
 		document.addEventListener("keydown", onKeyDown, true);
-		console.log(
-			"🔍  Element Dumper activated — hover, navigate with ↑/↓, Enter to dump, Esc to exit.",
-		);
 	};
 
 	const deactivate = () => {
@@ -550,7 +541,6 @@
 		panel?.remove();
 		panel = null;
 		document.getElementById("__dump_toast")?.remove();
-		console.log("🔴  Element Dumper deactivated.");
 	};
 
 	// ── Message listener ───────────────────────────────────────────────────────
@@ -558,16 +548,10 @@
 	api.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
 		if (msg.action !== "toggle-dumper") return;
 		if (active) {
-			console.log("Element Dumper: deactivating via toggle");
 			deactivate();
 		} else {
-			console.log("Element Dumper: activating via toggle");
 			activate();
 		}
 		sendResponse({ active });
 	});
-
-	console.log(
-		"ℹ️  Element Dumper loaded. Press Alt+Shift+D or click the toolbar icon to activate.",
-	);
 })();
