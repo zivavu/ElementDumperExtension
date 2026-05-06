@@ -27,6 +27,12 @@ const getMeaningfulSiblings = (el) => {
 };
 
 export const onKeyDown = (e) => {
+	if (e.altKey && e.key === "S") {
+		e.preventDefault();
+		e.stopPropagation();
+		doDump();
+		return;
+	}
 	switch (e.key) {
 		case "ArrowLeft": {
 			e.preventDefault();
