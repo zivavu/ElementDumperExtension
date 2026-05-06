@@ -1,13 +1,11 @@
 import {
-	detectPageUsesTailwind,
-} from "./tailwind/index.js";
-import {
 	escHtml,
 	getSelectedEl,
 	getTagLabel,
 	setStyles,
 	state,
 } from "./core.js";
+import { detectPageUsesTailwind } from "./tailwind/index.js";
 
 export const updateModeBadge = () => {
 	const pageUsesTailwind = detectPageUsesTailwind();
@@ -75,7 +73,7 @@ export const createUI = () => {
 		"color:#666;font-size:11px;margin-top:10px;padding-top:8px;border-top:1px solid #393a40",
 	);
 	footer.textContent =
-		"\u2191 Parent  \u00B7  \u2193 Child  \u00B7  Enter to dump  \u00B7  Esc exit";
+		"\u2190 Parent  \u00B7  \u2192 Child  \u00B7  \u2191 Prev  \u00B7  \u2193 Next  \u00B7  Enter to dump  \u00B7  Esc exit";
 
 	showWelcome();
 };
@@ -175,12 +173,7 @@ export const updateUI = () => {
 
 	state.panelDetails.textContent = parts.join(" \u00B7 ");
 
-	if (state.depthOffset > 0) {
-		state.panelDepth.textContent = `\u2191 ${state.depthOffset} level${state.depthOffset !== 1 ? "s" : ""} above hovered element`;
-		state.panelDepth.style.display = "block";
-	} else {
-		state.panelDepth.style.display = "none";
-	}
+	state.panelDepth.style.display = "none";
 
 	updateModeBadge();
 	state.panel.style.display = "block";

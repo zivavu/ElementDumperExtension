@@ -40,8 +40,6 @@ export const inlineStyles = (el, depth = 0) => {
 	return `${html}</${tag}>\n`;
 };
 
-
-
 async function writeToClipboard(text) {
 	if (navigator.clipboard && window.isSecureContext) {
 		return navigator.clipboard.writeText(text);

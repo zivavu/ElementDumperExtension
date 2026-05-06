@@ -17,7 +17,7 @@ export const activate = () => {
 	if (state.active) return;
 	state.active = true;
 	state.hoveredEl = null;
-	state.depthOffset = 0;
+	state.selectedEl = null;
 	createUI();
 	document.addEventListener("mouseover", onMouseOver, true);
 	document.addEventListener("keydown", onKeyDown, true);

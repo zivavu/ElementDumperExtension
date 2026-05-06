@@ -44,41 +44,25 @@ describe("buildAttrs", () => {
 });
 
 describe("getSelectedEl", () => {
-	it("returns null when hoveredEl is null", () => {
+	it("returns null when hoveredEl and selectedEl are null", () => {
 		state.hoveredEl = null;
+		state.selectedEl = null;
 		expect(getSelectedEl()).toBeNull();
 	});
 
-	it("returns hoveredEl when depthOffset is 0", () => {
+	it("returns hoveredEl when selectedEl is null", () => {
 		const el = document.createElement("div");
 		state.hoveredEl = el;
-		state.depthOffset = 0;
+		state.selectedEl = null;
 		expect(getSelectedEl()).toBe(el);
 	});
 
-	it("walks up parent chain by depthOffset", () => {
-		const grandparent = document.createElement("div");
-		const parent = document.createElement("section");
-		const child = document.createElement("span");
-		parent.appendChild(child);
-		grandparent.appendChild(parent);
-
-		state.hoveredEl = child;
-		state.depthOffset = 1;
-		expect(getSelectedEl()).toBe(parent);
-
-		state.depthOffset = 2;
-		expect(getSelectedEl()).toBe(grandparent);
-	});
-
-	it("stops at root when depthOffset exceeds tree depth", () => {
-		const parent = document.createElement("div");
-		const child = document.createElement("span");
-		parent.appendChild(child);
-
-		state.hoveredEl = child;
-		state.depthOffset = 5;
-		expect(getSelectedEl()).toBe(parent);
+	it("returns selectedEl when both are set", () => {
+		const hovered = document.createElement("div");
+		const selected = document.createElement("span");
+		state.hoveredEl = hovered;
+		state.selectedEl = selected;
+		expect(getSelectedEl()).toBe(selected);
 	});
 });
 

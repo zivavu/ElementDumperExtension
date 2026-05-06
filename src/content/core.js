@@ -2,7 +2,6 @@ const browserAPI =
 	typeof browser !== "undefined" && browser.runtime ? browser : chrome;
 export const api = browserAPI;
 
-export const MAX_DEPTH = 100;
 export const VOID_TAGS = new Set(["br", "hr", "img", "input", "meta", "link"]);
 export const SKIP_TAGS = new Set([
 	"script",
@@ -96,7 +95,7 @@ export const CSS_PROPS = [
 export const state = {
 	active: false,
 	hoveredEl: null,
-	depthOffset: 0,
+	selectedEl: null,
 	overlay: null,
 	panel: null,
 	panelBreadcrumb: null,
@@ -127,13 +126,7 @@ export const setStyles = (el, css) => {
 };
 
 export const getSelectedEl = () => {
-	if (!state.hoveredEl) return null;
-	let el = state.hoveredEl;
-	for (let i = 0; i < state.depthOffset; i++) {
-		if (el.parentElement) el = el.parentElement;
-		else break;
-	}
-	return el;
+	return state.selectedEl || state.hoveredEl || null;
 };
 
 export const isMeaningful = (el) =>
@@ -176,5 +169,3 @@ export const getComputedCSS = (el) => {
 	}
 	return result;
 };
-
-

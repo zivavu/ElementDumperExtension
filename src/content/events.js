@@ -1,11 +1,13 @@
-import { MAX_DEPTH, state } from "./core.js";
+import { getSelectedEl, isMeaningful, state } from "./core.js";
 import { doDump } from "./serialisers.js";
 import { updateUI } from "./ui.js";
 
 let _mouseRaf = null;
 let _exitCb = null;
 
-export const setExitCallback = (fn) => { _exitCb = fn; };
+export const setExitCallback = (fn) => {
+	_exitCb = fn;
+};
 
 export const onMouseOver = (e) => {
 	if (!state.panel || state.panel.contains(e.target)) return;
@@ -13,45 +15,68 @@ export const onMouseOver = (e) => {
 	_mouseRaf = requestAnimationFrame(() => {
 		_mouseRaf = null;
 		state.hoveredEl = e.target;
-		state.depthOffset = 0;
+		state.selectedEl = null;
 		updateUI();
 	});
 };
 
+const getMeaningfulSiblings = (el) => {
+	const parent = el.parentElement;
+	if (!parent) return [];
+	return [...parent.children].filter(isMeaningful);
+};
+
 export const onKeyDown = (e) => {
 	switch (e.key) {
-		case "ArrowUp": {
+		case "ArrowLeft": {
 			e.preventDefault();
 			e.stopPropagation();
-			if (!state.hoveredEl) return;
-			let el = state.hoveredEl;
-			let reachable = true;
-			for (let i = 0; i < state.depthOffset; i++) {
-				if (el.parentElement) el = el.parentElement;
-				else {
-					reachable = false;
-					break;
-				}
-			}
-			if (
-				reachable &&
-				el.parentElement &&
-				el.parentElement !== document &&
-				state.depthOffset < MAX_DEPTH
-			) {
-				state.depthOffset++;
+			const el = getSelectedEl();
+			if (!el) return;
+			if (el.parentElement && el.parentElement !== document) {
+				state.selectedEl = el.parentElement;
 				updateUI();
 			}
 			break;
 		}
-		case "ArrowDown":
+		case "ArrowRight": {
 			e.preventDefault();
 			e.stopPropagation();
-			if (state.depthOffset > 0) {
-				state.depthOffset--;
+			const el = getSelectedEl();
+			if (!el) return;
+			const firstChild = [...el.children].find(isMeaningful);
+			if (firstChild) {
+				state.selectedEl = firstChild;
 				updateUI();
 			}
 			break;
+		}
+		case "ArrowUp": {
+			e.preventDefault();
+			e.stopPropagation();
+			const el = getSelectedEl();
+			if (!el) return;
+			const siblings = getMeaningfulSiblings(el);
+			const idx = siblings.indexOf(el);
+			if (idx === -1 || siblings.length <= 1) return;
+			const prevIdx = (idx - 1 + siblings.length) % siblings.length;
+			state.selectedEl = siblings[prevIdx];
+			updateUI();
+			break;
+		}
+		case "ArrowDown": {
+			e.preventDefault();
+			e.stopPropagation();
+			const el = getSelectedEl();
+			if (!el) return;
+			const siblings = getMeaningfulSiblings(el);
+			const idx = siblings.indexOf(el);
+			if (idx === -1 || siblings.length <= 1) return;
+			const nextIdx = (idx + 1) % siblings.length;
+			state.selectedEl = siblings[nextIdx];
+			updateUI();
+			break;
+		}
 		case "Enter":
 			e.preventDefault();
 			e.stopPropagation();
