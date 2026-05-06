@@ -34,6 +34,8 @@ function detectPageUsesTailwind() {
 	for (let i = 0; i < sample; i++) {
 		const el = all[i];
 		for (const cls of el.classList) {
+			if (cls.startsWith("_")) continue;
+			if (/^[a-z]+-[a-f0-9]{5,}$/i.test(cls)) continue;
 			if (/[a-z]+-/i.test(cls)) {
 				matchCount++;
 				break;
