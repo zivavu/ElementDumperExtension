@@ -60,7 +60,7 @@ dist/
 | **Hover** over page elements | Blue highlight + info panel |
 | **←** / **→** | Navigate to parent / first child |
 | **↑** / **↓** | Navigate to previous / next sibling (looping) |
-| **Enter** | Copy element's HTML to clipboard |
+| **Enter** / **Alt+Shift+S** | Copy element's HTML to clipboard |
 | **T** or click mode badge | Toggle CSS / Tailwind mode |
 | **Esc** | Deactivate dumper |
 
