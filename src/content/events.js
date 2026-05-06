@@ -8,6 +8,14 @@ const onMouseOver = (e) => {
 };
 
 const onKeyDown = (e) => {
+	// Shift+Alt+S to dump
+	if (e.altKey && e.shiftKey && (e.key === "s" || e.key === "S")) {
+		e.preventDefault();
+		e.stopPropagation();
+		doDump();
+		return;
+	}
+
 	switch (e.key) {
 		case "ArrowUp": {
 			e.preventDefault();

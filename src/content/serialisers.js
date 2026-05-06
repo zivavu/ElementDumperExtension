@@ -37,8 +37,11 @@ const dumpTailwind = (el, depth = 0) => {
 	let html = `${indent}<${tag}${buildAttrs(el)}`;
 
 	if (detectPageUsesTailwind()) {
-		const origClass = el.getAttribute("class");
-		if (origClass) html += ` class="${origClass.replace(/"/g, "&quot;")}"`;
+		const styles = getComputedCSS(el);
+		const twClasses = cssToTailwind(styles);
+		const styleStr = cssToStyleString(styles);
+		if (twClasses.length > 0) html += ` class="${twClasses.join(" ")}"`;
+		if (styleStr) html += ` style="${styleStr}"`;
 	} else {
 		const styles = getComputedCSS(el);
 		const twClasses = cssToTailwind(styles);

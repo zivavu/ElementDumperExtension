@@ -142,7 +142,7 @@ const updateUI = () => {
 	const el = getSelectedEl();
 	if (!el) {
 		if (overlay) overlay.style.display = "none";
-		if (panel) panel.style.display = "none";
+		if (panel) showWelcome();
 		return;
 	}
 

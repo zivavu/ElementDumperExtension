@@ -13,7 +13,6 @@ const VOID_TAGS = new Set(["br", "hr", "img", "input", "meta", "link"]);
 const SKIP_TAGS = new Set(["script", "style", "link", "meta", "title", "head"]);
 const DUMP_ATTRS = [
 	"id",
-	"class",
 	"src",
 	"alt",
 	"href",

@@ -586,10 +586,6 @@ function cssToTailwind(styles) {
 						else if (px === 8) classes.push("border-8");
 					}
 				}
-				if (val.includes("dashed")) classes.push("border-dashed");
-				else if (val.includes("dotted")) classes.push("border-dotted");
-				else if (val.includes("double")) classes.push("border-double");
-				else if (val.includes("solid")) classes.push("border-solid");
 				break;
 			}
 			case "border-color": {
