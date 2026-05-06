@@ -54,5 +54,4 @@
 
 - `bun run lint` lints the **built** extension in `dist/`, not the source. Always build first.
 - Pre-existing lint warnings/errors in the Chrome MV3 manifest (`service_worker` without Firefox fallback) are expected; do not try to fix them unless explicitly requested.
-- The README still mentions "concatenates" and "no bundler" — that is stale; esbuild bundles the content script.
 - `release.js` falls back to PowerShell `Compress-Archive` if `archiver` is not resolvable.

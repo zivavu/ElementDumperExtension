@@ -6,7 +6,6 @@ globalThis.window = window;
 globalThis.navigator = window.navigator;
 globalThis.requestAnimationFrame = (cb) => setTimeout(cb, 0);
 
-// Mock chrome API so core.js can import safely
 globalThis.chrome = {
 	runtime: { onMessage: { addListener: () => {} } },
 	storage: {

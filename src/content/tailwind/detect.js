@@ -1,6 +1,3 @@
-// === Tailwind utility class recognition ===
-// Used by class-name sampling to detect whether a page uses Tailwind CSS.
-
 const BARE = new Set([
 	"flex",
 	"inline-flex",
