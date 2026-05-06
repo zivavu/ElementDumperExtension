@@ -1,5 +1,5 @@
 import { api, state } from "./core.js";
-import { onKeyDown, onMouseOver } from "./events.js";
+import { onKeyDown, onMouseOver, setExitCallback } from "./events.js";
 import { createUI, updateUI } from "./ui.js";
 
 let _scrollRaf = false;
@@ -36,6 +36,8 @@ export const deactivate = () => {
 	state.panel = null;
 	document.getElementById("__dump_toast")?.remove();
 };
+
+setExitCallback(deactivate);
 
 api.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
 	if (msg.action !== "toggle-dumper") return;

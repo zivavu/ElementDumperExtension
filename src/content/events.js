@@ -1,9 +1,11 @@
 import { MAX_DEPTH, state } from "./core.js";
-import { deactivate } from "./main.js";
 import { doDump } from "./serialisers.js";
 import { updateUI } from "./ui.js";
 
 let _mouseRaf = null;
+let _exitCb = null;
+
+export const setExitCallback = (fn) => { _exitCb = fn; };
 
 export const onMouseOver = (e) => {
 	if (!state.panel || state.panel.contains(e.target)) return;
@@ -58,7 +60,7 @@ export const onKeyDown = (e) => {
 		case "Escape":
 			e.preventDefault();
 			e.stopPropagation();
-			deactivate();
+			_exitCb?.();
 			break;
 	}
 };

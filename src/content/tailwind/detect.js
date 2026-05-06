@@ -41,8 +41,20 @@ function detectPageUsesTailwind() {
 		}
 	}
 
-	_pageUsesTailwind = matchCount > sample * 0.1;
+	console.log(
+		"matchCount",
+		matchCount,
+		"sample",
+		sample,
+		"ratio",
+		matchCount / sample,
+	);
+	_pageUsesTailwind = matchCount > sample * 0.5;
 	return _pageUsesTailwind;
+}
+
+export function resetTailwindCache() {
+	_pageUsesTailwind = null;
 }
 
 export { detectPageUsesTailwind };

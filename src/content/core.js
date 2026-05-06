@@ -146,10 +146,19 @@ export const buildAttrs = (el) =>
 	}).join("");
 
 export const getComputedCSS = (el) => {
-	const parentStyles = el.parentElement
-		? window.getComputedStyle(el.parentElement)
-		: null;
-	const styles = window.getComputedStyle(el);
+	let parentStyles = null;
+	try {
+		parentStyles = el.parentElement
+			? window.getComputedStyle(el.parentElement)
+			: null;
+	} catch {}
+
+	let styles = null;
+	try {
+		styles = window.getComputedStyle(el);
+	} catch {}
+	if (!styles) return {};
+
 	const result = {};
 	for (const prop of CSS_PROPS) {
 		const val = styles.getPropertyValue(prop);

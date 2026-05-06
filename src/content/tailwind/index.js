@@ -1,1 +1,1 @@
-export { detectPageUsesTailwind } from "./detect.js";
+export { detectPageUsesTailwind, resetTailwindCache } from "./detect.js";

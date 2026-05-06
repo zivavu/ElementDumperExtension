@@ -10,6 +10,9 @@ const manifest = JSON.parse(
 );
 const version = manifest.version;
 
+console.log("Running tests...");
+execSync("bun test", { stdio: "inherit", cwd: __dirname });
+
 console.log("Building (production)...");
 execSync("node build.js", {
 	stdio: "inherit",
