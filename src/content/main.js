@@ -1,4 +1,4 @@
-import { api, loadModePreference, state } from "./core.js";
+import { api, state } from "./core.js";
 import { onKeyDown, onMouseOver } from "./events.js";
 import { createUI, updateUI } from "./ui.js";
 
@@ -13,12 +13,11 @@ function onScroll() {
 	});
 }
 
-export const activate = async () => {
+export const activate = () => {
 	if (state.active) return;
 	state.active = true;
 	state.hoveredEl = null;
 	state.depthOffset = 0;
-	await loadModePreference();
 	createUI();
 	document.addEventListener("mouseover", onMouseOver, true);
 	document.addEventListener("keydown", onKeyDown, true);

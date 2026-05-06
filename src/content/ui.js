@@ -1,27 +1,21 @@
 import {
+	detectPageUsesTailwind,
+} from "./tailwind/index.js";
+import {
 	escHtml,
 	getSelectedEl,
 	getTagLabel,
-	saveModePreference,
 	setStyles,
 	state,
 } from "./core.js";
 
 export const updateModeBadge = () => {
-	state.modeBadge.textContent = state.tailwindMode ? "Tailwind" : "CSS";
-	state.modeBadge.style.borderColor = state.tailwindMode
+	const pageUsesTailwind = detectPageUsesTailwind();
+	state.modeBadge.textContent = pageUsesTailwind ? "Tailwind" : "CSS";
+	state.modeBadge.style.borderColor = pageUsesTailwind
 		? "#8b5cf6"
 		: "#0095f6";
-	state.modeBadge.style.color = state.tailwindMode ? "#a78bfa" : "#0095f6";
-	state.modeDesc.textContent = state.tailwindMode
-		? "Maps computed styles to Tailwind classes \u2014 fallback inline style for unmapped props"
-		: 'Inlines all computed styles into style="" attributes';
-};
-
-export const toggleMode = () => {
-	state.tailwindMode = !state.tailwindMode;
-	saveModePreference();
-	updateUI();
+	state.modeBadge.style.color = pageUsesTailwind ? "#a78bfa" : "#0095f6";
 };
 
 export const createUI = () => {
@@ -69,35 +63,19 @@ export const createUI = () => {
 		"display:flex;align-items:center;gap:8px;margin-top:8px",
 	);
 
-	state.modeBadge = document.createElement("button");
+	state.modeBadge = document.createElement("span");
 	setStyles(
 		state.modeBadge,
-		"background:transparent;border:1px solid #555;border-radius:4px;color:#ccc;font:600 10px/1.2 -apple-system,sans-serif;padding:3px 8px;cursor:pointer;text-transform:uppercase;letter-spacing:0.5px;flex-shrink:0",
+		"background:transparent;border:1px solid #555;border-radius:4px;color:#ccc;font:600 10px/1.2 -apple-system,sans-serif;padding:3px 8px;text-transform:uppercase;letter-spacing:0.5px;flex-shrink:0",
 	);
-	state.modeBadge.addEventListener("mouseenter", function () {
-		this.style.borderColor = "#0095f6";
-		this.style.color = "#0095f6";
-	});
-	state.modeBadge.addEventListener("mouseleave", function () {
-		this.style.borderColor = "#555";
-		this.style.color = "#ccc";
-	});
-	state.modeBadge.addEventListener("click", (e) => {
-		e.stopPropagation();
-		toggleMode();
-	});
 	modeRow.appendChild(state.modeBadge);
-
-	state.modeDesc = document.createElement("span");
-	setStyles(state.modeDesc, "color:#888;font-size:11px;line-height:1.3");
-	modeRow.appendChild(state.modeDesc);
 
 	const footer = makeChild(
 		"div",
 		"color:#666;font-size:11px;margin-top:10px;padding-top:8px;border-top:1px solid #393a40",
 	);
 	footer.textContent =
-		"\u2191 Parent  \u00B7  \u2193 Child  \u00B7  Enter to dump  \u00B7  T toggle  \u00B7  Esc exit";
+		"\u2191 Parent  \u00B7  \u2193 Child  \u00B7  Enter to dump  \u00B7  Esc exit";
 
 	showWelcome();
 };

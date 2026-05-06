@@ -8,37 +8,33 @@ function detectPageUsesTailwind() {
 		return true;
 	}
 
-	const sheets = document.styleSheets;
-	for (let i = 0; i < sheets.length; i++) {
+	for (let i = 0; i < document.styleSheets.length; i++) {
 		try {
-			const rules = sheets[i].cssRules || sheets[i].rules;
+			const rules =
+				document.styleSheets[i].cssRules ||
+				document.styleSheets[i].rules;
 			if (!rules) continue;
 			for (let j = 0; j < rules.length; j++) {
-				try {
-					const text = rules[j].cssText || "";
-					if (
-						text.includes("tailwind") ||
-						text.includes("! tailwindcss")
-					) {
-						_pageUsesTailwind = true;
-						return true;
-					}
-				} catch {}
+				const text = rules[j].cssText || "";
+				if (
+					text.includes("tailwind") ||
+					text.includes("! tailwindcss")
+				) {
+					_pageUsesTailwind = true;
+					return true;
+				}
 			}
 		} catch {}
 	}
 
-	const twPattern =
-		/^(flex|grid|container|mx-auto|px-\d|py-\d|p-\d|m-\d|mt-\d|mb-\d|ml-\d|mr-\d|gap-\d|w-\d|h-\d|text-\w+|font-\w+|bg-\w+|rounded|shadow|opacity-\d|z-\d|items-\w+|justify-\w+|object-\w+|overflow-\w+|cursor-\w+|whitespace-\w+|visible|invisible|relative|absolute|fixed|sticky|block|inline|hidden|table|table-cell|contents)$/;
-
-	const all = document.querySelectorAll("*");
+	const all = document.querySelectorAll("div, span, button, input");
 	const sample = Math.min(all.length, 100);
 	let matchCount = 0;
+
 	for (let i = 0; i < sample; i++) {
 		const el = all[i];
-		const clsList = el.classList;
-		for (let k = 0; k < clsList.length; k++) {
-			if (twPattern.test(clsList[k])) {
+		for (const cls of el.classList) {
+			if (/[a-z]+-/i.test(cls)) {
 				matchCount++;
 				break;
 			}

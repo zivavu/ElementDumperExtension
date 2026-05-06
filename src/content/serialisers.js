@@ -4,14 +4,8 @@ import {
 	getComputedCSS,
 	getSelectedEl,
 	isMeaningful,
-	state,
 	VOID_TAGS,
 } from "./core.js";
-import {
-	cssToStyleString,
-	cssToTailwind,
-	detectPageUsesTailwind,
-} from "./tailwind/index.js";
 import { showToast } from "./ui.js";
 
 export const inlineStyles = (el, depth = 0) => {
@@ -46,52 +40,7 @@ export const inlineStyles = (el, depth = 0) => {
 	return `${html}</${tag}>\n`;
 };
 
-export const dumpTailwind = (el, depth = 0) => {
-	if (!isMeaningful(el)) return "";
-	const tag = el.tagName.toLowerCase();
-	const indent = buildIndent(depth);
 
-	let html = `${indent}<${tag}${buildAttrs(el)}`;
-
-	const pageUsesTailwind = detectPageUsesTailwind();
-	const styles = getComputedCSS(el);
-
-	if (pageUsesTailwind) {
-		const originalClasses = [...el.classList].filter(
-			(c) => !c.startsWith("_"),
-		);
-		if (originalClasses.length > 0) {
-			html += ` class="${originalClasses.join(" ")}"`;
-		}
-		const styleStr = cssToStyleString(styles);
-		if (styleStr) html += ` style="${styleStr}"`;
-	} else {
-		const twClasses = cssToTailwind(styles);
-		const styleStr = cssToStyleString(styles);
-		if (twClasses.length > 0) html += ` class="${twClasses.join(" ")}"`;
-		if (styleStr) html += ` style="${styleStr}"`;
-	}
-
-	html += ">";
-
-	if (VOID_TAGS.has(tag)) return `${html}\n`;
-
-	if (el.childNodes.length === 1 && el.childNodes[0].nodeType === 3) {
-		const text = el.childNodes[0].textContent.trim();
-		if (text) html += text;
-	} else {
-		html += "\n";
-		for (const child of el.children) html += dumpTailwind(child, depth + 1);
-		if (el.shadowRoot) {
-			for (const child of el.shadowRoot.children) {
-				html += dumpTailwind(child, depth + 1);
-			}
-		}
-		html += indent;
-	}
-
-	return `${html}</${tag}>\n`;
-};
 
 async function writeToClipboard(text) {
 	if (navigator.clipboard && window.isSecureContext) {
@@ -131,12 +80,11 @@ export const doDump = () => {
 	const el = getSelectedEl();
 	if (!el) return;
 
-	const mode = state.tailwindMode ? "Tailwind" : "CSS";
-	const dump = state.tailwindMode ? dumpTailwind(el) : inlineStyles(el);
+	const dump = inlineStyles(el);
 
 	writeToClipboard(dump)
 		.then(() => {
-			const msg = `Copied ${dump.length.toLocaleString()} characters to clipboard! [${mode}]`;
+			const msg = `Copied ${dump.length.toLocaleString()} characters to clipboard!`;
 			showToast(msg, false);
 		})
 		.catch((err) => {

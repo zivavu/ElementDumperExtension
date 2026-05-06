@@ -97,7 +97,6 @@ export const state = {
 	active: false,
 	hoveredEl: null,
 	depthOffset: 0,
-	tailwindMode: false,
 	overlay: null,
 	panel: null,
 	panelBreadcrumb: null,
@@ -105,7 +104,6 @@ export const state = {
 	panelDetails: null,
 	panelDepth: null,
 	modeBadge: null,
-	modeDesc: null,
 };
 
 export const escHtml = (s) =>
@@ -170,23 +168,4 @@ export const getComputedCSS = (el) => {
 	return result;
 };
 
-const STORAGE_KEY = "elementDumperMode";
 
-export async function loadModePreference() {
-	try {
-		const result = await api.storage.local.get(STORAGE_KEY);
-		if (typeof result[STORAGE_KEY] === "boolean") {
-			state.tailwindMode = result[STORAGE_KEY];
-		}
-	} catch (err) {
-		console.warn("[Element Dumper] Failed to load mode preference:", err);
-	}
-}
-
-export async function saveModePreference() {
-	try {
-		await api.storage.local.set({ [STORAGE_KEY]: state.tailwindMode });
-	} catch (err) {
-		console.warn("[Element Dumper] Failed to save mode preference:", err);
-	}
-}

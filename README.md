@@ -2,7 +2,7 @@
 
 A browser extension that lets you **hover over any element on a page**, inspect its DOM structure, and copy its HTML (with inlined computed styles or Tailwind utility classes) to your clipboard.
 
-Designed as a context-gathering tool for AI assistants — instead of taking a screenshot (which the AI can't see), you dump the actual styled DOM tree for it to read.
+Designed as a context-gathering tool for AI assistants — instead of taking a screenshot, you dump the actual styled DOM tree for it to read.
 
 ![Firefox](https://img.shields.io/badge/Firefox-✓-orange) ![Chrome](https://img.shields.io/badge/Chrome-✓-brightgreen)
 

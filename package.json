@@ -8,13 +8,15 @@
 		"run": "bun dev.js",
 		"release": "bun release.js",
 		"lint": "web-ext lint --source-dir dist/firefox && web-ext lint --source-dir dist/chrome",
-		"format": "biome format --write src/ build.js dev.js release.js",
-		"check": "biome check src/ build.js dev.js release.js"
+		"format": "biome format --write src/ build.js dev.js release.js tests/",
+		"check": "biome check src/ build.js dev.js release.js tests/",
+		"test": "bun test"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.4.14",
 		"archiver": "^7.0.0",
 		"esbuild": "^0.28.0",
+		"happy-dom": "^18.0.0",
 		"web-ext": "^10.1.0"
 	}
 }
