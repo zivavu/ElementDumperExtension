@@ -1060,30 +1060,6 @@ let _pageUsesTailwind = null;
 function detectPageUsesTailwind() {
 	if (_pageUsesTailwind !== null) return _pageUsesTailwind;
 
-	if (document.querySelector('script[src*="tailwind"]')) {
-		_pageUsesTailwind = true;
-		return true;
-	}
-
-	for (let i = 0; i < document.styleSheets.length; i++) {
-		try {
-			const rules =
-				document.styleSheets[i].cssRules ||
-				document.styleSheets[i].rules;
-			if (!rules) continue;
-			for (let j = 0; j < rules.length; j++) {
-				const text = rules[j].cssText || "";
-				if (
-					text.includes("tailwind") ||
-					text.includes("! tailwindcss")
-				) {
-					_pageUsesTailwind = true;
-					return true;
-				}
-			}
-		} catch {}
-	}
-
 	const all = document.querySelectorAll("div, span, button, input");
 	const sample = Math.min(all.length, 100);
 	let matchCount = 0;
@@ -1098,15 +1074,8 @@ function detectPageUsesTailwind() {
 		}
 	}
 
-	console.log(
-		"matchCount",
-		matchCount,
-		"sample",
-		sample,
-		"ratio",
-		Math.round((matchCount / (sample || 1)) * 100) / 100,
-	);
-	_pageUsesTailwind = matchCount > sample * 0.5;
+	_pageUsesTailwind = matchCount > sample * 0.85;
+
 	return _pageUsesTailwind;
 }
 

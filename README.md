@@ -36,7 +36,7 @@ dist/
 └── chrome/    # Manifest V3 — for Chrome / Edge
 ```
 
-### Firefox / Zen Browser
+### Firefox 
 
 1. Run `bun run build`
 2. Open `about:debugging#/runtime/this-firefox`
