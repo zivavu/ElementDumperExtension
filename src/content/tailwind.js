@@ -92,6 +92,13 @@ const TAILWIND_MAPPED = new Set([
 	"font-size",
 	"font-weight",
 	"border-radius",
+	"border",
+	"border-color",
+	"border-style",
+	"border-top-width",
+	"border-right-width",
+	"border-bottom-width",
+	"border-left-width",
 	"overflow",
 	"cursor",
 	"opacity",
@@ -105,6 +112,16 @@ const TAILWIND_MAPPED = new Set([
 	"outline",
 	"color",
 	"background-color",
+	"line-height",
+	"font-family",
+	"letter-spacing",
+	"flex",
+	"top",
+	"right",
+	"bottom",
+	"left",
+	"aspect-ratio",
+	"background-size",
 ]);
 
 function pxValue(cssVal) {
@@ -246,6 +263,30 @@ function cssToTailwind(styles) {
 				classes.push(val);
 				break;
 
+			case "top":
+			case "right":
+			case "bottom":
+			case "left": {
+				const px = pxValue(val);
+				if (px !== null) {
+					if (px === 0) classes.push(`${prop}-0`);
+					else classes.push(`${prop}-${closestTwSpacing(px)}`);
+				} else {
+					const m = val.match(/^([\d.]+)%$/);
+					if (m) {
+						const pct = parseFloat(m[1]);
+						if (pct === 0) classes.push(`${prop}-0`);
+						else if (pct === 50) classes.push(`${prop}-1/2`);
+						else if (pct === 100) classes.push(`${prop}-full`);
+						else if (pct === 25) classes.push(`${prop}-1/4`);
+						else if (Math.abs(pct - 33.33) < 1) classes.push(`${prop}-1/3`);
+						else if (Math.abs(pct - 66.66) < 1) classes.push(`${prop}-2/3`);
+						else if (pct === 75) classes.push(`${prop}-3/4`);
+					}
+				}
+				break;
+			}
+
 			case "flex-direction": {
 				const map = {
 					row: "flex-row",
@@ -259,6 +300,17 @@ function cssToTailwind(styles) {
 			case "flex-wrap":
 				classes.push(`flex-${val}`);
 				break;
+
+			case "flex": {
+				if (val === "1 1 0%" || val === "1 1 0px" || val.startsWith("1 1 0")) {
+					classes.push("flex-1");
+				} else if (val === "1 1 auto") {
+					classes.push("flex-auto");
+				} else if (val === "0 0 auto" || val === "none") {
+					classes.push("flex-none");
+				}
+				break;
+			}
 
 			case "align-items":
 				classes.push(`items-${val}`);
@@ -385,6 +437,26 @@ function cssToTailwind(styles) {
 			case "text-align":
 				classes.push(`text-${val}`);
 				break;
+			case "letter-spacing": {
+				const px = pxValue(val);
+				if (px !== null) {
+					const em = px / 16;
+					const trackMap = [
+						{ cls: "tracking-tighter", em: -0.05 },
+						{ cls: "tracking-tight", em: -0.025 },
+						{ cls: "tracking-normal", em: 0 },
+						{ cls: "tracking-wide", em: 0.025 },
+						{ cls: "tracking-wider", em: 0.05 },
+						{ cls: "tracking-widest", em: 0.1 },
+					];
+					let best = trackMap[0];
+					for (const entry of trackMap) {
+						if (Math.abs(entry.em - em) < Math.abs(best.em - em)) best = entry;
+					}
+					classes.push(best.cls);
+				}
+				break;
+			}
 			case "font-size": {
 				const px = pxValue(val);
 				if (px !== null) classes.push(closestTwFontSize(px));
@@ -393,6 +465,71 @@ function cssToTailwind(styles) {
 			case "font-weight": {
 				const n = parseInt(val);
 				if (!isNaN(n)) classes.push(closestTwFontWeight(n));
+				break;
+			}
+			case "font-family": {
+				const lower = val.toLowerCase();
+				if (
+					lower.includes("monospace") ||
+					lower.includes("mono") ||
+					lower.includes("consolas") ||
+					lower.includes("courier")
+				) {
+					classes.push("font-mono");
+				} else if (
+					lower.includes("serif") ||
+					lower.includes("georgia") ||
+					lower.includes("times new roman") ||
+					lower.includes("times")
+				) {
+					classes.push("font-serif");
+				} else if (
+					lower.includes("arial") ||
+					lower.includes("helvetica") ||
+					lower.includes("system-ui") ||
+					lower.includes("sans-serif")
+				) {
+					classes.push("font-sans");
+				}
+				break;
+			}
+			case "line-height": {
+				const px = pxValue(val);
+				if (px !== null) {
+					const leadingMap = [
+						{ cls: "leading-3", px: 12 },
+						{ cls: "leading-4", px: 16 },
+						{ cls: "leading-5", px: 20 },
+						{ cls: "leading-6", px: 24 },
+						{ cls: "leading-7", px: 28 },
+						{ cls: "leading-8", px: 32 },
+						{ cls: "leading-9", px: 36 },
+						{ cls: "leading-10", px: 40 },
+					];
+					let best = leadingMap[0];
+					for (const entry of leadingMap) {
+						if (Math.abs(entry.px - px) < Math.abs(best.px - px)) best = entry;
+					}
+					classes.push(best.cls);
+				} else {
+					const num = parseFloat(val);
+					if (!isNaN(num)) {
+						const ulMap = [
+							{ cls: "leading-none", val: 1 },
+							{ cls: "leading-tight", val: 1.25 },
+							{ cls: "leading-snug", val: 1.375 },
+							{ cls: "leading-normal", val: 1.5 },
+							{ cls: "leading-relaxed", val: 1.625 },
+							{ cls: "leading-loose", val: 2 },
+						];
+						let best = ulMap[0];
+						for (const entry of ulMap) {
+							if (Math.abs(entry.val - num) < Math.abs(best.val - num))
+								best = entry;
+						}
+						classes.push(best.cls);
+					}
+				}
 				break;
 			}
 			case "text-decoration": {
@@ -433,6 +570,54 @@ function cssToTailwind(styles) {
 						else if (px <= 16) classes.push("rounded-2xl");
 						else classes.push("rounded-3xl");
 					}
+				}
+				break;
+			}
+			case "border": {
+				const parts = val.split(/\s+/);
+				const widthVal = parts.find((p) => p.endsWith("px") || /^\d+$/.test(p));
+				if (widthVal) {
+					const px = pxValue(widthVal) ?? parseFloat(widthVal);
+					if (!isNaN(px)) {
+						if (px === 0) classes.push("border-0");
+						else if (px === 1) classes.push("border");
+						else if (px === 2) classes.push("border-2");
+						else if (px === 4) classes.push("border-4");
+						else if (px === 8) classes.push("border-8");
+					}
+				}
+				if (val.includes("dashed")) classes.push("border-dashed");
+				else if (val.includes("dotted")) classes.push("border-dotted");
+				else if (val.includes("double")) classes.push("border-double");
+				else if (val.includes("solid")) classes.push("border-solid");
+				break;
+			}
+			case "border-color": {
+				const twColor = colorToTw(val);
+				if (twColor) classes.push(`border-${twColor}`);
+				break;
+			}
+			case "border-style": {
+				if (val === "solid") classes.push("border-solid");
+				else if (val === "dashed") classes.push("border-dashed");
+				else if (val === "dotted") classes.push("border-dotted");
+				else if (val === "double") classes.push("border-double");
+				else if (val === "none") classes.push("border-none");
+				else if (val === "hidden") classes.push("border-hidden");
+				break;
+			}
+			case "border-top-width":
+			case "border-right-width":
+			case "border-bottom-width":
+			case "border-left-width": {
+				const side = prop.split("-")[1];
+				const px = pxValue(val);
+				if (px !== null) {
+					if (px === 0) classes.push(`border-${side}-0`);
+					else if (px === 1) classes.push(`border-${side}`);
+					else if (px === 2) classes.push(`border-${side}-2`);
+					else if (px === 4) classes.push(`border-${side}-4`);
+					else if (px === 8) classes.push(`border-${side}-8`);
 				}
 				break;
 			}
@@ -525,6 +710,12 @@ function cssToTailwind(styles) {
 				classes.push(`object-${val}`);
 				break;
 
+			case "aspect-ratio": {
+				if (val === "1 / 1" || val === "1") classes.push("aspect-square");
+				else if (val === "16 / 9") classes.push("aspect-video");
+				break;
+			}
+
 			case "color": {
 				const twColor = colorToTw(val);
 				if (twColor) classes.push(`text-${twColor}`);
@@ -535,8 +726,26 @@ function cssToTailwind(styles) {
 				if (twColor) classes.push(`bg-${twColor}`);
 				break;
 			}
-			case "outline":
+			case "background-size": {
+				if (val === "cover") classes.push("bg-cover");
+				else if (val === "contain") classes.push("bg-contain");
 				break;
+			}
+			case "outline": {
+				const px = pxValue(val);
+				if (px !== null) {
+					if (px === 0) classes.push("outline-0");
+					else if (px === 1) classes.push("outline");
+					else if (px === 2) classes.push("outline-2");
+					else if (px === 4) classes.push("outline-4");
+					else if (px === 8) classes.push("outline-8");
+				}
+				if (val.includes("dashed")) classes.push("outline-dashed");
+				else if (val.includes("dotted")) classes.push("outline-dotted");
+				else if (val.includes("double")) classes.push("outline-double");
+				else if (val.includes("hidden")) classes.push("outline-hidden");
+				break;
+			}
 			default:
 				break;
 		}

@@ -48,7 +48,7 @@ const createUI = () => {
 	);
 	panelTag = makeChild(
 		"div",
-		"font-weight:600;color:#0095f6;font-size:15px;margin-bottom:4px",
+		"font-weight:600;color:#0095f6;font-size:15px;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap",
 	);
 	panelDetails = makeChild("div", "color:#a8a8a8;font-size:12px");
 	panelDepth = makeChild(

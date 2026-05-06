@@ -29,6 +29,7 @@ const activate = () => {
 	createUI();
 	document.addEventListener("mouseover", onMouseOver, true);
 	document.addEventListener("keydown", onKeyDown, true);
+	document.addEventListener("scroll", updateUI, true);
 };
 
 const deactivate = () => {
@@ -36,6 +37,7 @@ const deactivate = () => {
 	active = false;
 	document.removeEventListener("mouseover", onMouseOver, true);
 	document.removeEventListener("keydown", onKeyDown, true);
+	document.removeEventListener("scroll", updateUI, true);
 	overlay?.remove();
 	overlay = null;
 	panel?.remove();
