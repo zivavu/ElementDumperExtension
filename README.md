@@ -58,7 +58,8 @@ dist/
 | **Alt+Shift+D** | Toggle dumper on/off |
 | **Click toolbar icon** | Toggle dumper on/off |
 | **Hover** over page elements | Blue highlight + info panel |
-| **↑** / **↓** | Navigate to parent / back toward hovered element |
+| **←** / **→** | Navigate to parent / first child |
+| **↑** / **↓** | Navigate to previous / next sibling (looping) |
 | **Enter** | Copy element's HTML to clipboard |
 | **T** or click mode badge | Toggle CSS / Tailwind mode |
 | **Esc** | Deactivate dumper |
@@ -106,7 +107,7 @@ element-dumper-extension/
 └── README.md
 ```
 
-The content script is split into logical components under `src/content/`. The build script concatenates them in order and wraps them in an IIFE, outputting directly to `dist/firefox/content.js` and `dist/chrome/content.js`. There is no bundler — just file concatenation.
+The content script is split into logical components under `src/content/`. `build.js` uses **esbuild** to bundle them into an IIFE for each target.
 
 ## Development server
 
