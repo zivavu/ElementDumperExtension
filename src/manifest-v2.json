@@ -33,7 +33,6 @@
 			"description": "__MSG_commandToggleDumper__"
 		}
 	},
-	"data_collection_permissions": [],
 	"browser_specific_settings": {
 		"gecko": {
 			"id": "element-dumper@example.com"

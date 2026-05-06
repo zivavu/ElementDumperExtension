@@ -1,5 +1,3 @@
-// ── Serialisers ────────────────────────────────────────────────────────────
-
 import {
 	buildAttrs,
 	buildIndent,
@@ -13,7 +11,7 @@ import {
 	cssToStyleString,
 	cssToTailwind,
 	detectPageUsesTailwind,
-} from "./tailwind.js";
+} from "./tailwind/index.js";
 import { showToast } from "./ui.js";
 
 export const inlineStyles = (el, depth = 0) => {
@@ -47,8 +45,6 @@ export const inlineStyles = (el, depth = 0) => {
 
 	return `${html}</${tag}>\n`;
 };
-
-// ── Tailwind mode serialiser ────────────────────────────────────────────
 
 export const dumpTailwind = (el, depth = 0) => {
 	if (!isMeaningful(el)) return "";
@@ -97,8 +93,6 @@ export const dumpTailwind = (el, depth = 0) => {
 	return `${html}</${tag}>\n`;
 };
 
-// ── Clipboard helpers ──────────────────────────────────────────────────────
-
 async function writeToClipboard(text) {
 	if (navigator.clipboard && window.isSecureContext) {
 		return navigator.clipboard.writeText(text);
@@ -132,8 +126,6 @@ async function writeToClipboard(text) {
 		throw new Error("Clipboard copy failed in this context");
 	}
 }
-
-// ── Dump ───────────────────────────────────────────────────────────────────
 
 export const doDump = () => {
 	const el = getSelectedEl();

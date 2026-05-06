@@ -1,5 +1,3 @@
-// Background script for Element Dumper - works in Firefox (MV2) and Chrome (MV3)
-
 const browserAPI = typeof browser !== "undefined" ? browser : chrome;
 
 function isValidTabUrl(url) {
@@ -30,14 +28,11 @@ async function toggleDumper(tab) {
 	try {
 		await browserAPI.tabs.sendMessage(tab.id, { action: "toggle-dumper" });
 	} catch (err) {
-		// Content script may not be injected yet on this tab
 		setBadgeError(tab.id);
 		console.warn("[Element Dumper] Failed to toggle:", err.message);
 	}
 }
 
-// ---- Toolbar icon click ----
-// MV2 uses browserAction, MV3 uses action
 const actionAPI = browserAPI.browserAction || browserAPI.action;
 if (actionAPI?.onClicked) {
 	actionAPI.onClicked.addListener((tab) => {
@@ -45,7 +40,6 @@ if (actionAPI?.onClicked) {
 	});
 }
 
-// ---- Keyboard shortcut (Alt+Shift+D) ----
 if (browserAPI.commands?.onCommand) {
 	browserAPI.commands.onCommand.addListener((command, tab) => {
 		if (command === "toggle-dumper") {

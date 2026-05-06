@@ -16,8 +16,7 @@
 		}
 	},
 	"background": {
-		"service_worker": "background.js",
-		"scripts": ["background.js"]
+		"service_worker": "background.js"
 	},
 	"content_scripts": [
 		{
@@ -35,7 +34,6 @@
 			"description": "__MSG_commandToggleDumper__"
 		}
 	},
-	"data_collection_permissions": [],
 	"content_security_policy": {
 		"extension_pages": "script-src 'self'; object-src 'self'"
 	},

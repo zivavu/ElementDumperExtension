@@ -1,5 +1,3 @@
-// ── UI: mode badge ─────────────────────────────────────────────────────────
-
 import {
 	escHtml,
 	getSelectedEl,
@@ -25,8 +23,6 @@ export const toggleMode = () => {
 	saveModePreference();
 	updateUI();
 };
-
-// ── UI: creation ───────────────────────────────────────────────────────────
 
 export const createUI = () => {
 	if (state.overlay) return;
@@ -116,8 +112,6 @@ const showWelcome = () => {
 	state.panel.style.display = "block";
 };
 
-// ── UI: toast ──────────────────────────────────────────────────────────────
-
 export const showToast = (message, isError) => {
 	document.getElementById("__dump_toast")?.remove();
 
@@ -147,8 +141,6 @@ export const showToast = (message, isError) => {
 		setTimeout(() => toast.remove(), 300);
 	}, 3000);
 };
-
-// ── UI: update ─────────────────────────────────────────────────────────────
 
 export const updateUI = () => {
 	const el = getSelectedEl();

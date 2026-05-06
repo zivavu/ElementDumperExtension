@@ -5,17 +5,18 @@ const { execSync } = require("node:child_process");
 const DIST = path.join(__dirname, "dist");
 const RELEASES = path.join(__dirname, "releases");
 
-// Read version from manifest (either one works, they share the same version)
 const manifest = JSON.parse(
 	fs.readFileSync(path.join(__dirname, "src", "manifest-v2.json"), "utf8"),
 );
 const version = manifest.version;
 
-// Ensure dist is fresh
-console.log("Building...");
-execSync("node build.js", { stdio: "inherit", cwd: __dirname });
+console.log("Building (production)...");
+execSync("node build.js", {
+	stdio: "inherit",
+	cwd: __dirname,
+	env: { ...process.env, MINIFY: "true" },
+});
 
-// Create releases directory
 fs.mkdirSync(RELEASES, { recursive: true });
 
 function zipDirectory(source, outPath) {
@@ -33,7 +34,6 @@ function zipDirectory(source, outPath) {
 }
 
 async function main() {
-	// Try using archiver if available, fallback to PowerShell on Windows
 	const useArchiver = (() => {
 		try {
 			require.resolve("archiver");
@@ -55,7 +55,6 @@ async function main() {
 		if (useArchiver) {
 			await zipDirectory(sourceDir, outPath);
 		} else {
-			// Windows fallback: PowerShell Compress-Archive
 			const psPath = sourceDir.replace(/\//g, "\\");
 			const psOut = outPath.replace(/\//g, "\\");
 			execSync(

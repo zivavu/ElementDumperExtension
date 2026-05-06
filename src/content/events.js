@@ -1,5 +1,3 @@
-// ── Event handlers ─────────────────────────────────────────────────────────
-
 import { MAX_DEPTH, state } from "./core.js";
 import { deactivate } from "./main.js";
 import { doDump } from "./serialisers.js";

@@ -6,6 +6,7 @@ const SRC = path.join(__dirname, "src");
 const OUT = path.join(__dirname, "dist");
 
 const CONTENT_ENTRY = path.join(SRC, "content", "main.js");
+const shouldMinify = process.env.MINIFY === "true";
 
 function copyDir(src, dest) {
 	fs.mkdirSync(dest, { recursive: true });
@@ -20,46 +21,30 @@ function copyDir(src, dest) {
 	}
 }
 
-function stripImportExport(content) {
-	// Strip `export` from `export const/function/let/class` inside IIFE
-	// Strip `import { ... } from "./core.js";` lines from bundled output
-	return content
-		.replace(/^import\s+.*;$/gm, "")
-		.replace(/^\s*import\s+.*;$/gm, "")
-		.replace(/\bexport\s+/g, "");
-}
-
 async function buildContentJs(dest) {
-	const result = await esbuild.build({
+	await esbuild.build({
 		entryPoints: [CONTENT_ENTRY],
 		bundle: true,
 		format: "iife",
-		globalName: "__ed",
 		target: ["firefox115", "chrome115"],
 		outfile: path.join(dest, "content.js"),
-		sourcemap: "inline",
-		minify: false,
+		sourcemap: shouldMinify ? undefined : "inline",
+		minify: shouldMinify,
 		logLevel: "info",
-		write: false,
 	});
-	const code = stripImportExport(result.outputFiles[0].text);
-	fs.writeFileSync(path.join(dest, "content.js"), code);
 }
 
 async function buildBackground(dest) {
-	const result = await esbuild.build({
+	await esbuild.build({
 		entryPoints: [path.join(SRC, "background.js")],
 		bundle: true,
 		format: "iife",
 		target: ["firefox115", "chrome115"],
 		outfile: path.join(dest, "background.js"),
-		sourcemap: "inline",
-		minify: false,
+		sourcemap: shouldMinify ? undefined : "inline",
+		minify: shouldMinify,
 		logLevel: "info",
-		write: false,
 	});
-	const code = stripImportExport(result.outputFiles[0].text);
-	fs.writeFileSync(path.join(dest, "background.js"), code);
 }
 
 async function buildTarget(target, manifestFile) {

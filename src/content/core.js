@@ -1,10 +1,6 @@
-// Element Dumper - content script
-// Cross-browser API shim: Firefox uses browser.*, Chrome uses chrome.*
 const browserAPI =
 	typeof browser !== "undefined" && browser.runtime ? browser : chrome;
 export const api = browserAPI;
-
-// ── Constants ──────────────────────────────────────────────────────────────
 
 export const MAX_DEPTH = 100;
 export const VOID_TAGS = new Set(["br", "hr", "img", "input", "meta", "link"]);
@@ -97,15 +93,11 @@ export const CSS_PROPS = [
 	"aspect-ratio",
 ];
 
-// ── State ──────────────────────────────────────────────────────────────────
-// Mutable state object shared across all modules via import { state }
-
 export const state = {
 	active: false,
 	hoveredEl: null,
 	depthOffset: 0,
 	tailwindMode: false,
-	// DOM elements created on activation
 	overlay: null,
 	panel: null,
 	panelBreadcrumb: null,
@@ -115,8 +107,6 @@ export const state = {
 	modeBadge: null,
 	modeDesc: null,
 };
-
-// ── Pure helpers ───────────────────────────────────────────────────────────
 
 export const escHtml = (s) =>
 	s
@@ -138,8 +128,6 @@ export const setStyles = (el, css) => {
 	el.style.cssText = css;
 };
 
-// ── DOM selection ──────────────────────────────────────────────────────────
-
 export const getSelectedEl = () => {
 	if (!state.hoveredEl) return null;
 	let el = state.hoveredEl;
@@ -149,8 +137,6 @@ export const getSelectedEl = () => {
 	}
 	return el;
 };
-
-// ── Dump helpers ───────────────────────────────────────────────────────────
 
 export const isMeaningful = (el) =>
 	el.nodeType === 1 && !SKIP_TAGS.has(el.tagName.toLowerCase());
@@ -177,15 +163,12 @@ export const getComputedCSS = (el) => {
 			val === "0px"
 		)
 			continue;
-		// Skip inherited values to reduce noise in AI context
 		if (parentStyles && val === parentStyles.getPropertyValue(prop))
 			continue;
 		result[prop] = val;
 	}
 	return result;
 };
-
-// ── Storage helpers ────────────────────────────────────────────────────────
 
 const STORAGE_KEY = "elementDumperMode";
 
