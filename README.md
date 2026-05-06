@@ -133,28 +133,6 @@ The extension loads into a **temporary Firefox profile** — it won't affect you
 >
 > For standard Firefox, just `bun dev` works without any config.
 
-## Releasing
-
-To create versioned zip packages for distribution:
-
-```bash
-bun run release
-```
-
-This builds both targets and creates:
-
-```
-releases/
-├── element-dumper-0.0.2-firefox.zip
-└── element-dumper-0.0.2-chrome.zip
-```
-
-The version is read automatically from `manifest.json`. These zips are ready to upload to:
-- **Firefox:** [addons.mozilla.org](https://addons.mozilla.org) (requires signing)
-- **Chrome:** [Chrome Web Store](https://chrome.google.com/webstore) (requires MV3)
-
-Both `dist/` and `releases/` are gitignored — only source files are committed.
-
 ## License
 
 MIT

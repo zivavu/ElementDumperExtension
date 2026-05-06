@@ -1,21 +1,30 @@
 {
 	"manifest_version": 3,
-	"name": "Element Dumper",
+	"default_locale": "en",
+	"name": "__MSG_extensionName__",
 	"version": "0.0.3",
-	"description": "Hover over any page element, navigate its DOM ancestors, and copy its HTML (with inlined styles or raw classes) to clipboard.",
-	"permissions": ["activeTab", "clipboardWrite", "scripting"],
+	"description": "__MSG_extensionDescription__",
+	"permissions": ["activeTab", "clipboardWrite", "scripting", "storage"],
+	"host_permissions": ["<all_urls>"],
+	"icons": {
+		"256": "icons/icon.png"
+	},
 	"action": {
-		"default_title": "Toggle Element Dumper (Alt+Shift+D)",
-		"default_icon": "icons/icon.png"
+		"default_title": "__MSG_actionDefaultTitle__",
+		"default_icon": {
+			"256": "icons/icon.png"
+		}
 	},
 	"background": {
-		"service_worker": "background.js"
+		"service_worker": "background.js",
+		"scripts": ["background.js"]
 	},
 	"content_scripts": [
 		{
 			"matches": ["<all_urls>"],
 			"js": ["content.js"],
-			"run_at": "document_idle"
+			"run_at": "document_idle",
+			"all_frames": true
 		}
 	],
 	"commands": {
@@ -23,7 +32,16 @@
 			"suggested_key": {
 				"default": "Alt+Shift+D"
 			},
-			"description": "Toggle Element Dumper on/off"
+			"description": "__MSG_commandToggleDumper__"
+		}
+	},
+	"data_collection_permissions": [],
+	"content_security_policy": {
+		"extension_pages": "script-src 'self'; object-src 'self'"
+	},
+	"browser_specific_settings": {
+		"gecko": {
+			"id": "element-dumper@example.com"
 		}
 	}
 }

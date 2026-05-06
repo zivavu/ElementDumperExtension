@@ -3,12 +3,18 @@
 	"private": true,
 	"description": "Element Dumper - a browser extension for dumping HTML elements with styles",
 	"scripts": {
-		"build": "node build.js",
-		"dev": "node dev.js",
-		"run": "node dev.js",
-		"release": "node release.js"
+		"build": "bun build.js",
+		"dev": "bun dev.js",
+		"run": "bun dev.js",
+		"release": "bun release.js",
+		"lint": "web-ext lint --source-dir dist/firefox && web-ext lint --source-dir dist/chrome",
+		"format": "biome format --write src/ build.js dev.js release.js",
+		"check": "biome check src/ build.js dev.js release.js"
 	},
 	"devDependencies": {
+		"@biomejs/biome": "^2.4.14",
+		"archiver": "^7.0.0",
+		"esbuild": "^0.28.0",
 		"web-ext": "^10.1.0"
 	}
 }

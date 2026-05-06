@@ -1,57 +1,69 @@
 // ── UI: mode badge ─────────────────────────────────────────────────────────
 
-const updateModeBadge = () => {
-	modeBadge.textContent = tailwindMode ? "Tailwind" : "CSS";
-	modeBadge.style.borderColor = tailwindMode ? "#8b5cf6" : "#0095f6";
-	modeBadge.style.color = tailwindMode ? "#a78bfa" : "#0095f6";
-	modeDesc.textContent = tailwindMode
-		? "Maps computed styles to Tailwind classes — fallback inline style for unmapped props"
+import {
+	escHtml,
+	getSelectedEl,
+	getTagLabel,
+	saveModePreference,
+	setStyles,
+	state,
+} from "./core.js";
+
+export const updateModeBadge = () => {
+	state.modeBadge.textContent = state.tailwindMode ? "Tailwind" : "CSS";
+	state.modeBadge.style.borderColor = state.tailwindMode
+		? "#8b5cf6"
+		: "#0095f6";
+	state.modeBadge.style.color = state.tailwindMode ? "#a78bfa" : "#0095f6";
+	state.modeDesc.textContent = state.tailwindMode
+		? "Maps computed styles to Tailwind classes \u2014 fallback inline style for unmapped props"
 		: 'Inlines all computed styles into style="" attributes';
 };
 
-const toggleMode = () => {
-	tailwindMode = !tailwindMode;
+export const toggleMode = () => {
+	state.tailwindMode = !state.tailwindMode;
+	saveModePreference();
 	updateUI();
 };
 
 // ── UI: creation ───────────────────────────────────────────────────────────
 
-const createUI = () => {
-	if (overlay) return;
+export const createUI = () => {
+	if (state.overlay) return;
 
-	overlay = document.createElement("div");
-	overlay.id = "__dump_highlight";
+	state.overlay = document.createElement("div");
+	state.overlay.id = "__dump_highlight";
 	setStyles(
-		overlay,
+		state.overlay,
 		"position:fixed;pointer-events:none;z-index:2147483646;border:2px solid #0095f6;background:rgba(0,149,246,0.08);display:none",
 	);
-	document.body.appendChild(overlay);
+	document.body.appendChild(state.overlay);
 
-	panel = document.createElement("div");
-	panel.id = "__dump_panel";
+	state.panel = document.createElement("div");
+	state.panel.id = "__dump_panel";
 	setStyles(
-		panel,
+		state.panel,
 		'position:fixed;bottom:16px;right:16px;z-index:2147483647;background:#1f1f22;color:#f5f5f5;font:13px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:14px 18px;border-radius:10px;border:1px solid #393a40;box-shadow:0 6px 24px rgba(0,0,0,0.5);max-width:540px;min-width:300px;display:none',
 	);
-	document.body.appendChild(panel);
+	document.body.appendChild(state.panel);
 
 	const makeChild = (tag, css) => {
 		const el = document.createElement(tag);
 		setStyles(el, css);
-		panel.appendChild(el);
+		state.panel.appendChild(el);
 		return el;
 	};
 
-	panelBreadcrumb = makeChild(
+	state.panelBreadcrumb = makeChild(
 		"div",
 		"margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #393a40;font-size:11px;line-height:1.7;overflow-x:auto;white-space:nowrap;color:#a8a8a8",
 	);
-	panelTag = makeChild(
+	state.panelTag = makeChild(
 		"div",
 		"font-weight:600;color:#0095f6;font-size:15px;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap",
 	);
-	panelDetails = makeChild("div", "color:#a8a8a8;font-size:12px");
-	panelDepth = makeChild(
+	state.panelDetails = makeChild("div", "color:#a8a8a8;font-size:12px");
+	state.panelDepth = makeChild(
 		"div",
 		"color:#f5a623;font-size:11px;margin-top:6px;display:none",
 	);
@@ -61,52 +73,52 @@ const createUI = () => {
 		"display:flex;align-items:center;gap:8px;margin-top:8px",
 	);
 
-	modeBadge = document.createElement("button");
+	state.modeBadge = document.createElement("button");
 	setStyles(
-		modeBadge,
+		state.modeBadge,
 		"background:transparent;border:1px solid #555;border-radius:4px;color:#ccc;font:600 10px/1.2 -apple-system,sans-serif;padding:3px 8px;cursor:pointer;text-transform:uppercase;letter-spacing:0.5px;flex-shrink:0",
 	);
-	modeBadge.addEventListener("mouseenter", function () {
+	state.modeBadge.addEventListener("mouseenter", function () {
 		this.style.borderColor = "#0095f6";
 		this.style.color = "#0095f6";
 	});
-	modeBadge.addEventListener("mouseleave", function () {
+	state.modeBadge.addEventListener("mouseleave", function () {
 		this.style.borderColor = "#555";
 		this.style.color = "#ccc";
 	});
-	modeBadge.addEventListener("click", (e) => {
+	state.modeBadge.addEventListener("click", (e) => {
 		e.stopPropagation();
 		toggleMode();
 	});
-	modeRow.appendChild(modeBadge);
+	modeRow.appendChild(state.modeBadge);
 
-	modeDesc = document.createElement("span");
-	setStyles(modeDesc, "color:#888;font-size:11px;line-height:1.3");
-	modeRow.appendChild(modeDesc);
+	state.modeDesc = document.createElement("span");
+	setStyles(state.modeDesc, "color:#888;font-size:11px;line-height:1.3");
+	modeRow.appendChild(state.modeDesc);
 
 	const footer = makeChild(
 		"div",
 		"color:#666;font-size:11px;margin-top:10px;padding-top:8px;border-top:1px solid #393a40",
 	);
 	footer.textContent =
-		"↑ Parent  ·  ↓ Child  ·  Enter to dump  ·  T toggle  ·  Esc exit";
+		"\u2191 Parent  \u00B7  \u2193 Child  \u00B7  Enter to dump  \u00B7  T toggle  \u00B7  Esc exit";
 
 	showWelcome();
 };
 
 const showWelcome = () => {
-	panelBreadcrumb.textContent = "";
-	panelTag.textContent = "<hover over an element>";
-	panelTag.style.color = "#888";
-	panelDetails.textContent = "";
-	panelDepth.style.display = "none";
+	state.panelBreadcrumb.textContent = "";
+	state.panelTag.textContent = "<hover over an element>";
+	state.panelTag.style.color = "#888";
+	state.panelDetails.textContent = "";
+	state.panelDepth.style.display = "none";
 	updateModeBadge();
-	panel.style.display = "block";
+	state.panel.style.display = "block";
 };
 
 // ── UI: toast ──────────────────────────────────────────────────────────────
 
-const showToast = (message, isError) => {
+export const showToast = (message, isError) => {
 	document.getElementById("__dump_toast")?.remove();
 
 	const toast = document.createElement("div");
@@ -138,17 +150,17 @@ const showToast = (message, isError) => {
 
 // ── UI: update ─────────────────────────────────────────────────────────────
 
-const updateUI = () => {
+export const updateUI = () => {
 	const el = getSelectedEl();
 	if (!el) {
-		if (overlay) overlay.style.display = "none";
-		if (panel) showWelcome();
+		if (state.overlay) state.overlay.style.display = "none";
+		if (state.panel) showWelcome();
 		return;
 	}
 
 	const rect = el.getBoundingClientRect();
 	setStyles(
-		overlay,
+		state.overlay,
 		`position:fixed;pointer-events:none;z-index:2147483646;display:block;top:${rect.top}px;left:${rect.left}px;width:${rect.width}px;height:${rect.height}px;border:2px solid #0095f6;background:rgba(0,149,246,0.08)`,
 	);
 
@@ -159,41 +171,47 @@ const updateUI = () => {
 		cur = cur.parentElement;
 	}
 
-	panelBreadcrumb.innerHTML = pathNodes
-		.map((node, i) => {
-			const label = escHtml(getTagLabel(node));
-			const style =
-				node === el ? "color:#0095f6;font-weight:600" : "color:#a8a8a8";
-			const sep =
-				i < pathNodes.length - 1
-					? ' <span style="color:#444;font-size:11px">\u203A</span> '
-					: "";
-			return `<span style="${style}">&lt;${label}&gt;</span>${sep}`;
-		})
-		.join("");
+	state.panelBreadcrumb.textContent = "";
+	pathNodes.forEach((node, i) => {
+		const label = escHtml(getTagLabel(node));
+		const isCurrent = node === el;
 
-	panelTag.style.color = "#0095f6";
-	panelTag.innerHTML = `&lt;${escHtml(getTagLabel(el))}&gt;`;
+		const span = document.createElement("span");
+		span.style.color = isCurrent ? "#0095f6" : "#a8a8a8";
+		if (isCurrent) span.style.fontWeight = "600";
+		span.textContent = `<${label}>`;
+		state.panelBreadcrumb.appendChild(span);
+
+		if (i < pathNodes.length - 1) {
+			const sep = document.createElement("span");
+			sep.style.color = "#444";
+			sep.style.fontSize = "11px";
+			sep.textContent = " \u203A ";
+			state.panelBreadcrumb.appendChild(sep);
+		}
+	});
+
+	state.panelTag.style.color = "#0095f6";
+	state.panelTag.textContent = `<${getTagLabel(el)}>`;
 
 	const dims = `${rect.width | 0}\u00D7${rect.height | 0}`;
 	const text = (el.textContent ?? "").trim().slice(0, 120);
 	const childCount = el.children.length;
 
-	const det = [`<span style="color:#e8e8e8">${dims}</span>`];
+	const parts = [`${dims}`];
 	if (childCount > 0)
-		det.push(
-			` &nbsp;\u00B7 &nbsp;${childCount} child${childCount !== 1 ? "ren" : ""}`,
-		);
-	if (text) det.push(` &nbsp;\u00B7 &nbsp;"${escHtml(text)}"`);
-	panelDetails.innerHTML = det.join("");
+		parts.push(`${childCount} child${childCount !== 1 ? "ren" : ""}`);
+	if (text) parts.push(`"${text}"`);
 
-	if (depthOffset > 0) {
-		panelDepth.textContent = `\u2191 ${depthOffset} level${depthOffset !== 1 ? "s" : ""} above hovered element`;
-		panelDepth.style.display = "block";
+	state.panelDetails.textContent = parts.join(" \u00B7 ");
+
+	if (state.depthOffset > 0) {
+		state.panelDepth.textContent = `\u2191 ${state.depthOffset} level${state.depthOffset !== 1 ? "s" : ""} above hovered element`;
+		state.panelDepth.style.display = "block";
 	} else {
-		panelDepth.style.display = "none";
+		state.panelDepth.style.display = "none";
 	}
 
 	updateModeBadge();
-	panel.style.display = "block";
+	state.panel.style.display = "block";
 };

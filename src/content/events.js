@@ -1,14 +1,24 @@
 // ── Event handlers ─────────────────────────────────────────────────────────
 
-const onMouseOver = (e) => {
-	if (!panel || panel.contains(e.target)) return;
-	hoveredEl = e.target;
-	depthOffset = 0;
-	updateUI();
+import { MAX_DEPTH, state } from "./core.js";
+import { deactivate } from "./main.js";
+import { doDump } from "./serialisers.js";
+import { toggleMode, updateUI } from "./ui.js";
+
+let _mouseRaf = null;
+
+export const onMouseOver = (e) => {
+	if (!state.panel || state.panel.contains(e.target)) return;
+	if (_mouseRaf) return;
+	_mouseRaf = requestAnimationFrame(() => {
+		_mouseRaf = null;
+		state.hoveredEl = e.target;
+		state.depthOffset = 0;
+		updateUI();
+	});
 };
 
-const onKeyDown = (e) => {
-	// Shift+Alt+S to dump
+export const onKeyDown = (e) => {
 	if (e.altKey && e.shiftKey && (e.key === "s" || e.key === "S")) {
 		e.preventDefault();
 		e.stopPropagation();
@@ -20,10 +30,10 @@ const onKeyDown = (e) => {
 		case "ArrowUp": {
 			e.preventDefault();
 			e.stopPropagation();
-			if (!hoveredEl) return;
-			let el = hoveredEl;
+			if (!state.hoveredEl) return;
+			let el = state.hoveredEl;
 			let reachable = true;
-			for (let i = 0; i < depthOffset; i++) {
+			for (let i = 0; i < state.depthOffset; i++) {
 				if (el.parentElement) el = el.parentElement;
 				else {
 					reachable = false;
@@ -34,9 +44,9 @@ const onKeyDown = (e) => {
 				reachable &&
 				el.parentElement &&
 				el.parentElement !== document &&
-				depthOffset < MAX_DEPTH
+				state.depthOffset < MAX_DEPTH
 			) {
-				depthOffset++;
+				state.depthOffset++;
 				updateUI();
 			}
 			break;
@@ -44,8 +54,8 @@ const onKeyDown = (e) => {
 		case "ArrowDown":
 			e.preventDefault();
 			e.stopPropagation();
-			if (depthOffset > 0) {
-				depthOffset--;
+			if (state.depthOffset > 0) {
+				state.depthOffset--;
 				updateUI();
 			}
 			break;

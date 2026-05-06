@@ -1,17 +1,22 @@
-// Element Dumper — content script
-// Injected on every page. Waits for a 'toggle-dumper' message from the
-// background script, then activates / deactivates the dumper UI.
-
+// Element Dumper - content script
 // Cross-browser API shim: Firefox uses browser.*, Chrome uses chrome.*
-const api =
+const browserAPI =
 	typeof browser !== "undefined" && browser.runtime ? browser : chrome;
+export const api = browserAPI;
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
-const MAX_DEPTH = 100;
-const VOID_TAGS = new Set(["br", "hr", "img", "input", "meta", "link"]);
-const SKIP_TAGS = new Set(["script", "style", "link", "meta", "title", "head"]);
-const DUMP_ATTRS = [
+export const MAX_DEPTH = 100;
+export const VOID_TAGS = new Set(["br", "hr", "img", "input", "meta", "link"]);
+export const SKIP_TAGS = new Set([
+	"script",
+	"style",
+	"link",
+	"meta",
+	"title",
+	"head",
+]);
+export const DUMP_ATTRS = [
 	"id",
 	"src",
 	"alt",
@@ -24,7 +29,7 @@ const DUMP_ATTRS = [
 	"aria-label",
 	"data-testid",
 ];
-const CSS_PROPS = [
+export const CSS_PROPS = [
 	"display",
 	"position",
 	"width",
@@ -93,50 +98,52 @@ const CSS_PROPS = [
 ];
 
 // ── State ──────────────────────────────────────────────────────────────────
+// Mutable state object shared across all modules via import { state }
 
-let active = false;
-let hoveredEl = null;
-let depthOffset = 0;
-let tailwindMode = false;
-
-// DOM elements created on activation
-let overlay = null;
-let panel = null;
-let panelBreadcrumb = null;
-let panelTag = null;
-let panelDetails = null;
-let panelDepth = null;
-let modeBadge = null;
-let modeDesc = null;
+export const state = {
+	active: false,
+	hoveredEl: null,
+	depthOffset: 0,
+	tailwindMode: false,
+	// DOM elements created on activation
+	overlay: null,
+	panel: null,
+	panelBreadcrumb: null,
+	panelTag: null,
+	panelDetails: null,
+	panelDepth: null,
+	modeBadge: null,
+	modeDesc: null,
+};
 
 // ── Pure helpers ───────────────────────────────────────────────────────────
 
-const escHtml = (s) =>
+export const escHtml = (s) =>
 	s
 		.replace(/&/g, "&amp;")
 		.replace(/</g, "&lt;")
 		.replace(/>/g, "&gt;")
 		.replace(/"/g, "&quot;");
 
-const getTagLabel = (el) => {
+export const getTagLabel = (el) => {
 	const tag = el.tagName.toLowerCase();
-	const id = el.id ? `#${el.id}` : "";
+	const id_ = el.id ? `#${el.id}` : "";
 	const cls = [...el.classList].filter((c) => !c.startsWith("_")).join(".");
-	return `${tag}${id}${cls ? `.${cls}` : ""}`;
+	return `${tag}${id_}${cls ? `.${cls}` : ""}`;
 };
 
-const buildIndent = (depth) => "  ".repeat(depth);
+export const buildIndent = (depth) => "  ".repeat(depth);
 
-const setStyles = (el, css) => {
+export const setStyles = (el, css) => {
 	el.style.cssText = css;
 };
 
 // ── DOM selection ──────────────────────────────────────────────────────────
 
-const getSelectedEl = () => {
-	if (!hoveredEl) return null;
-	let el = hoveredEl;
-	for (let i = 0; i < depthOffset; i++) {
+export const getSelectedEl = () => {
+	if (!state.hoveredEl) return null;
+	let el = state.hoveredEl;
+	for (let i = 0; i < state.depthOffset; i++) {
 		if (el.parentElement) el = el.parentElement;
 		else break;
 	}
@@ -145,16 +152,16 @@ const getSelectedEl = () => {
 
 // ── Dump helpers ───────────────────────────────────────────────────────────
 
-const isMeaningful = (el) =>
+export const isMeaningful = (el) =>
 	el.nodeType === 1 && !SKIP_TAGS.has(el.tagName.toLowerCase());
 
-const buildAttrs = (el) =>
+export const buildAttrs = (el) =>
 	DUMP_ATTRS.map((attr) => {
 		const val = el.getAttribute(attr);
 		return val ? ` ${attr}="${val.replace(/"/g, "&quot;")}"` : "";
 	}).join("");
 
-const getComputedCSS = (el) => {
+export const getComputedCSS = (el) => {
 	const parentStyles = el.parentElement
 		? window.getComputedStyle(el.parentElement)
 		: null;
@@ -171,8 +178,32 @@ const getComputedCSS = (el) => {
 		)
 			continue;
 		// Skip inherited values to reduce noise in AI context
-		if (parentStyles && val === parentStyles.getPropertyValue(prop)) continue;
+		if (parentStyles && val === parentStyles.getPropertyValue(prop))
+			continue;
 		result[prop] = val;
 	}
 	return result;
 };
+
+// ── Storage helpers ────────────────────────────────────────────────────────
+
+const STORAGE_KEY = "elementDumperMode";
+
+export async function loadModePreference() {
+	try {
+		const result = await api.storage.local.get(STORAGE_KEY);
+		if (typeof result[STORAGE_KEY] === "boolean") {
+			state.tailwindMode = result[STORAGE_KEY];
+		}
+	} catch (err) {
+		console.warn("[Element Dumper] Failed to load mode preference:", err);
+	}
+}
+
+export async function saveModePreference() {
+	try {
+		await api.storage.local.set({ [STORAGE_KEY]: state.tailwindMode });
+	} catch (err) {
+		console.warn("[Element Dumper] Failed to save mode preference:", err);
+	}
+}

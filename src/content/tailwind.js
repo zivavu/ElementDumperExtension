@@ -1,3 +1,7 @@
+// Reuse a single offscreen canvas for all color conversions
+const _colorCanvas = document.createElement("canvas");
+const _colorCtx = _colorCanvas.getContext("2d", { willReadFrequently: true });
+
 // ── CSS to Tailwind class mapper ─────────────────────────────────────────
 
 const TW_SPACING = [
@@ -66,7 +70,7 @@ const TW_FONT_WEIGHTS = [
 	{ cls: "font-black", val: 900 },
 ];
 
-const TAILWIND_MAPPED = new Set([
+export const TAILWIND_MAPPED = new Set([
 	"display",
 	"position",
 	"flex-direction",
@@ -160,9 +164,9 @@ function colorToTw(cssColor) {
 	const rgb = ctx.fillStyle;
 	const m = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
 	if (!m) return null;
-	const r = parseInt(m[1]),
-		g = parseInt(m[2]),
-		b = parseInt(m[3]);
+	const r = parseInt(m[1], 10),
+		g = parseInt(m[2], 10),
+		b = parseInt(m[3], 10);
 	const max = Math.max(r, g, b),
 		min = Math.min(r, g, b);
 	const l = ((max + min) / 2 / 255) * 100;
@@ -175,7 +179,15 @@ function colorToTw(cssColor) {
 
 	if (max - min < 15 && s < 15) {
 		const shade =
-			l > 80 ? "100" : l > 65 ? "300" : l > 50 ? "500" : l > 35 ? "700" : "900";
+			l > 80
+				? "100"
+				: l > 65
+					? "300"
+					: l > 50
+						? "500"
+						: l > 35
+							? "700"
+							: "900";
 		return `gray-${shade}`;
 	}
 
@@ -237,7 +249,7 @@ function colorToTw(cssColor) {
 	return `${colorName}-${shade}`;
 }
 
-function cssToTailwind(styles) {
+export function cssToTailwind(styles) {
 	const classes = [];
 
 	for (const [prop, val] of Object.entries(styles)) {
@@ -279,8 +291,10 @@ function cssToTailwind(styles) {
 						else if (pct === 50) classes.push(`${prop}-1/2`);
 						else if (pct === 100) classes.push(`${prop}-full`);
 						else if (pct === 25) classes.push(`${prop}-1/4`);
-						else if (Math.abs(pct - 33.33) < 1) classes.push(`${prop}-1/3`);
-						else if (Math.abs(pct - 66.66) < 1) classes.push(`${prop}-2/3`);
+						else if (Math.abs(pct - 33.33) < 1)
+							classes.push(`${prop}-1/3`);
+						else if (Math.abs(pct - 66.66) < 1)
+							classes.push(`${prop}-2/3`);
 						else if (pct === 75) classes.push(`${prop}-3/4`);
 					}
 				}
@@ -302,7 +316,11 @@ function cssToTailwind(styles) {
 				break;
 
 			case "flex": {
-				if (val === "1 1 0%" || val === "1 1 0px" || val.startsWith("1 1 0")) {
+				if (
+					val === "1 1 0%" ||
+					val === "1 1 0px" ||
+					val.startsWith("1 1 0")
+				) {
 					classes.push("flex-1");
 				} else if (val === "1 1 auto") {
 					classes.push("flex-auto");
@@ -401,7 +419,8 @@ function cssToTailwind(styles) {
 				if (val === "100%") classes.push("min-w-full");
 				else {
 					const px = pxValue(val);
-					if (px !== null) classes.push(`min-w-${closestTwSpacing(px)}`);
+					if (px !== null)
+						classes.push(`min-w-${closestTwSpacing(px)}`);
 				}
 				break;
 			}
@@ -410,7 +429,8 @@ function cssToTailwind(styles) {
 				else if (val === "100%") classes.push("min-h-full");
 				else {
 					const px = pxValue(val);
-					if (px !== null) classes.push(`min-h-${closestTwSpacing(px)}`);
+					if (px !== null)
+						classes.push(`min-h-${closestTwSpacing(px)}`);
 				}
 				break;
 			}
@@ -419,7 +439,8 @@ function cssToTailwind(styles) {
 				else if (val === "100%") classes.push("max-w-full");
 				else {
 					const px = pxValue(val);
-					if (px !== null) classes.push(`max-w-${closestTwSpacing(px)}`);
+					if (px !== null)
+						classes.push(`max-w-${closestTwSpacing(px)}`);
 				}
 				break;
 			}
@@ -429,7 +450,8 @@ function cssToTailwind(styles) {
 				else if (val === "100vh") classes.push("max-h-screen");
 				else {
 					const px = pxValue(val);
-					if (px !== null) classes.push(`max-h-${closestTwSpacing(px)}`);
+					if (px !== null)
+						classes.push(`max-h-${closestTwSpacing(px)}`);
 				}
 				break;
 			}
@@ -451,7 +473,8 @@ function cssToTailwind(styles) {
 					];
 					let best = trackMap[0];
 					for (const entry of trackMap) {
-						if (Math.abs(entry.em - em) < Math.abs(best.em - em)) best = entry;
+						if (Math.abs(entry.em - em) < Math.abs(best.em - em))
+							best = entry;
 					}
 					classes.push(best.cls);
 				}
@@ -463,8 +486,8 @@ function cssToTailwind(styles) {
 				break;
 			}
 			case "font-weight": {
-				const n = parseInt(val);
-				if (!isNaN(n)) classes.push(closestTwFontWeight(n));
+				const n = parseInt(val, 10);
+				if (!Number.isNaN(n)) classes.push(closestTwFontWeight(n));
 				break;
 			}
 			case "font-family": {
@@ -508,12 +531,13 @@ function cssToTailwind(styles) {
 					];
 					let best = leadingMap[0];
 					for (const entry of leadingMap) {
-						if (Math.abs(entry.px - px) < Math.abs(best.px - px)) best = entry;
+						if (Math.abs(entry.px - px) < Math.abs(best.px - px))
+							best = entry;
 					}
 					classes.push(best.cls);
 				} else {
 					const num = parseFloat(val);
-					if (!isNaN(num)) {
+					if (!Number.isNaN(num)) {
 						const ulMap = [
 							{ cls: "leading-none", val: 1 },
 							{ cls: "leading-tight", val: 1.25 },
@@ -524,7 +548,10 @@ function cssToTailwind(styles) {
 						];
 						let best = ulMap[0];
 						for (const entry of ulMap) {
-							if (Math.abs(entry.val - num) < Math.abs(best.val - num))
+							if (
+								Math.abs(entry.val - num) <
+								Math.abs(best.val - num)
+							)
 								best = entry;
 						}
 						classes.push(best.cls);
@@ -539,7 +566,11 @@ function cssToTailwind(styles) {
 				break;
 			}
 			case "text-transform": {
-				if (val === "uppercase" || val === "lowercase" || val === "capitalize")
+				if (
+					val === "uppercase" ||
+					val === "lowercase" ||
+					val === "capitalize"
+				)
 					classes.push(val);
 				else if (val === "none") classes.push("normal-case");
 				break;
@@ -557,7 +588,8 @@ function cssToTailwind(styles) {
 			}
 
 			case "border-radius": {
-				if (val === "9999px" || val === "50%") classes.push("rounded-full");
+				if (val === "9999px" || val === "50%")
+					classes.push("rounded-full");
 				else {
 					const px = pxValue(val);
 					if (px !== null) {
@@ -575,10 +607,12 @@ function cssToTailwind(styles) {
 			}
 			case "border": {
 				const parts = val.split(/\s+/);
-				const widthVal = parts.find((p) => p.endsWith("px") || /^\d+$/.test(p));
+				const widthVal = parts.find(
+					(p) => p.endsWith("px") || /^\d+$/.test(p),
+				);
 				if (widthVal) {
 					const px = pxValue(widthVal) ?? parseFloat(widthVal);
-					if (!isNaN(px)) {
+					if (!Number.isNaN(px)) {
 						if (px === 0) classes.push("border-0");
 						else if (px === 1) classes.push("border");
 						else if (px === 2) classes.push("border-2");
@@ -646,7 +680,7 @@ function cssToTailwind(styles) {
 			}
 			case "opacity": {
 				const pct = parseFloat(val);
-				if (!isNaN(pct)) {
+				if (!Number.isNaN(pct)) {
 					const opacityMap = [
 						{ max: 5, cls: "opacity-0" },
 						{ max: 15, cls: "opacity-10" },
@@ -674,7 +708,8 @@ function cssToTailwind(styles) {
 				if (val === "none") classes.push("shadow-none");
 				else if (val.includes("inset")) classes.push("shadow-inner");
 				else {
-					const yPx = (String(val).match(/^rgba?.*\s([\d.]+)px\s/) || [])[1];
+					const yPx = (String(val).match(/^rgba?.*\s([\d.]+)px\s/) ||
+						[])[1];
 					const yVal = yPx ? parseFloat(yPx) : 0;
 					if (yVal <= 1) classes.push("shadow-sm");
 					else if (yVal <= 4) classes.push("shadow");
@@ -691,8 +726,8 @@ function cssToTailwind(styles) {
 				break;
 			}
 			case "z-index": {
-				const n = parseInt(val);
-				if (!isNaN(n)) {
+				const n = parseInt(val, 10);
+				if (!Number.isNaN(n)) {
 					if (n <= 0) classes.push("z-0");
 					else if (n <= 10) classes.push("z-10");
 					else if (n <= 20) classes.push("z-20");
@@ -707,7 +742,8 @@ function cssToTailwind(styles) {
 				break;
 
 			case "aspect-ratio": {
-				if (val === "1 / 1" || val === "1") classes.push("aspect-square");
+				if (val === "1 / 1" || val === "1")
+					classes.push("aspect-square");
 				else if (val === "16 / 9") classes.push("aspect-video");
 				break;
 			}
@@ -750,7 +786,7 @@ function cssToTailwind(styles) {
 	return classes;
 }
 
-function cssToStyleString(styles) {
+export function cssToStyleString(styles) {
 	const parts = [];
 	for (const [prop, val] of Object.entries(styles)) {
 		if (!TAILWIND_MAPPED.has(prop)) {
@@ -764,7 +800,7 @@ function cssToStyleString(styles) {
 
 let _pageUsesTailwind = null;
 
-function detectPageUsesTailwind() {
+export function detectPageUsesTailwind() {
 	if (_pageUsesTailwind !== null) return _pageUsesTailwind;
 
 	// 1. Check for Tailwind CDN script
@@ -782,7 +818,10 @@ function detectPageUsesTailwind() {
 			for (let j = 0; j < rules.length; j++) {
 				try {
 					const text = rules[j].cssText || "";
-					if (text.includes("tailwind") || text.includes("! tailwindcss")) {
+					if (
+						text.includes("tailwind") ||
+						text.includes("! tailwindcss")
+					) {
 						_pageUsesTailwind = true;
 						return true;
 					}

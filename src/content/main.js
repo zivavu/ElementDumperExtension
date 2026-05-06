@@ -1,47 +1,33 @@
-// ── Dump ───────────────────────────────────────────────────────────────────
+// ── Element Dumper — entry point ──────────────────────────────────────────
 
-const doDump = () => {
-	const el = getSelectedEl();
-	if (!el) return;
-
-	const mode = tailwindMode ? "Tailwind" : "CSS";
-	const dump = tailwindMode ? dumpTailwind(el) : inlineStyles(el);
-
-	navigator.clipboard
-		.writeText(dump)
-		.then(() => {
-			const msg = `Copied ${dump.length.toLocaleString()} characters to clipboard! [${mode}]`;
-			showToast(msg, false);
-		})
-		.catch((err) => {
-			const msg = `Failed to copy: ${err.message}`;
-			showToast(msg, true);
-		});
-};
+import { api, loadModePreference, state } from "./core.js";
+import { onKeyDown, onMouseOver } from "./events.js";
+import { createUI, updateUI } from "./ui.js";
 
 // ── Activate / Deactivate ──────────────────────────────────────────────────
 
-const activate = () => {
-	if (active) return;
-	active = true;
-	hoveredEl = null;
-	depthOffset = 0;
+export const activate = async () => {
+	if (state.active) return;
+	state.active = true;
+	state.hoveredEl = null;
+	state.depthOffset = 0;
+	await loadModePreference();
 	createUI();
 	document.addEventListener("mouseover", onMouseOver, true);
 	document.addEventListener("keydown", onKeyDown, true);
 	document.addEventListener("scroll", updateUI, true);
 };
 
-const deactivate = () => {
-	if (!active) return;
-	active = false;
+export const deactivate = () => {
+	if (!state.active) return;
+	state.active = false;
 	document.removeEventListener("mouseover", onMouseOver, true);
 	document.removeEventListener("keydown", onKeyDown, true);
 	document.removeEventListener("scroll", updateUI, true);
-	overlay?.remove();
-	overlay = null;
-	panel?.remove();
-	panel = null;
+	state.overlay?.remove();
+	state.overlay = null;
+	state.panel?.remove();
+	state.panel = null;
 	document.getElementById("__dump_toast")?.remove();
 };
 
@@ -49,10 +35,10 @@ const deactivate = () => {
 
 api.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
 	if (msg.action !== "toggle-dumper") return;
-	if (active) {
+	if (state.active) {
 		deactivate();
 	} else {
 		activate();
 	}
-	sendResponse({ active });
+	sendResponse({ active: state.active });
 });
